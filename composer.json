@@ -1,0 +1,25 @@
+{
+  "name": "wukong8/rustphp",
+  "description": "a light restful mvc framework",
+  "keywords": [
+    "mvc",
+    "restful",
+    "framework"
+  ],
+  "type": "library",
+  "authors": [
+    {
+      "name": "cjj",
+      "email": "rustysun.cn@gmail.com",
+      "role": "Creator"
+    }
+  ],
+  "require": {
+    "psr/http-message-implementation": "1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "rust\\": "src/"
+    }
+  }
+}
