@@ -7,6 +7,7 @@ ini_set('set_time_limit', 0);//php执行时间没有限制
 //自动载入
 $root_path = dirname(__DIR__);
 require_once($root_path . '/vendor/autoload.php');
+//load
 use rust\loader\ClassLoader;
 use rust\Rust;
 use rust\util\YAConfig;
