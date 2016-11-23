@@ -1,12 +1,11 @@
 <?php
 namespace rust\web;
-
-use rust\Path;
-use rust\http\URL;
-use rust\util\Buffer;
-use rust\template\Compiler;
-use rust\interfaces\IView;
 use rust\fso\FileSystemObject;
+use rust\http\URL;
+use rust\interfaces\IView;
+use rust\Path;
+use rust\template\Compiler;
+use rust\util\Buffer;
 
 /**
  * Class View
@@ -14,15 +13,15 @@ use rust\fso\FileSystemObject;
  * @package rust\web
  */
 final class View implements IView {
-    private $_suffix = '.html';
+    private $_suffix    = '.html';
     private $_path;
     private $_curLayout = NULL, $_curBlock;
-    private $_data = [
+    private $_data      = [
         'layouts' => [],
         'blocks'  => [],
-        'vars'    => []
+        'vars'    => [],
     ];
-    private $_blockPre = '%%BLOCK__', $_blockSuf = '__BLOCK%%';
+    private $_blockPre  = '%%BLOCK__', $_blockSuf = '__BLOCK%%';
     /**
      * @var Uri
      */
@@ -31,13 +30,14 @@ final class View implements IView {
 
     /**
      * View constructor.
+     *
      * @param Uri $uri
      */
     public function __construct(Uri $uri) {
         $this->_data['vars'] = [
-            'view' => &$this
+            'view' => &$this,
         ];
-        $this->setPath($uri->getPhysicalPath());
+        $this->setPath(Path::getRootPath());
         $this->_uri = $uri;
     }
 
@@ -45,7 +45,7 @@ final class View implements IView {
      *
      *
      * @param string|array $name
-     * @param        $value
+     * @param              $value
      */
     public function assign($name, $value = NULL) {
         if ('view' !== $name) { //protected 'view' variable.
@@ -68,11 +68,11 @@ final class View implements IView {
     }
 
     /**
-     * @param $block_name
+     * @param      $block_name
      * @param null $val
      */
     public function beginBlock($block_name, $val = NULL) {
-        $block_name = strtoupper($block_name);
+        $block_name      = strtoupper($block_name);
         $this->_curBlock = $block_name;
         if (NULL !== $val) {
             $this->_data['blocks'][$this->_curBlock] = $val;
@@ -115,15 +115,16 @@ final class View implements IView {
             //TODO:
             //return FALSE;
         }
-        $content = Buffer::getAndClean();
+        $content                                   = Buffer::getAndClean();
         $this->_data['layouts'][$this->_curLayout] = trim($content);
-        $this->_curLayout = NULL;
+        $this->_curLayout                          = NULL;
     }
 
     /**
      * @param $view
      */
     public function load($view) {
+        $view = str_replace('\\','/',$view);
         $viewFile = $view . $this->_suffix;
         $viewFile = $this->_getCompiler()->compile($viewFile);
         $this->_renderFile($viewFile);
@@ -168,7 +169,6 @@ final class View implements IView {
             $keys[$key] = $this->_blockPre . $value . $this->_blockSuf;
         }
         $values = array_values($this->_data['blocks']);
-
         return str_replace($keys, $values, $result);
     }
 
@@ -183,14 +183,14 @@ final class View implements IView {
     /**
      *
      * @param string $path
-     * @param array $params
+     * @param array  $params
      * @param string $site
      *
      * @return string
      */
     public function url($path = '', $params = [], $site = '') {
         if (is_string($params)) {
-            $site = $params;
+            $site   = $params;
             $params = [];
         }
         URL::setDomain($this->_uri->getHost(), $this->_uri->getMainDomain());
@@ -203,6 +203,7 @@ final class View implements IView {
      * Escapes a string for output in an HTML document
      *
      * @param  string $raw
+     *
      * @return string
      */
     public function escape($raw) {
@@ -218,7 +219,6 @@ final class View implements IView {
             // we do not blacklist anything anywhere.
             $flags |= ENT_IGNORE;
         }
-
         return htmlspecialchars($raw, $flags, "UTF-8");
     }
 
@@ -228,6 +228,7 @@ final class View implements IView {
      * URIs within it, and converts them to clickable anchor elements.
      *
      * @param  string $raw
+     *
      * @return string
      */
     public function escapeButPreserveUris($raw) {
@@ -237,7 +238,9 @@ final class View implements IView {
 
     /**
      * TODO:remove to string
+     *
      * @param $original
+     *
      * @return string
      */
     public function slug($original) {
@@ -250,7 +253,7 @@ final class View implements IView {
      * @param $filename
      */
     private function _renderFile($filename) {
-        if(!$filename){
+        if (!$filename) {
             return;
         }
         $data = $this->_data['vars'];
@@ -267,10 +270,9 @@ final class View implements IView {
      */
     private function _getCompiler() {
         if (!$this->_compiler) {
-            $fso = new FileSystemObject();
+            $fso             = new FileSystemObject();
             $this->_compiler = new Compiler($fso, Path::getCachePath(), $this->_path);
         }
-
         return $this->_compiler;
     }
 }

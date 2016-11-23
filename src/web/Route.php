@@ -41,7 +41,7 @@ class Route implements IRoute {
             'package'    => $config->get('package'),
             'module'     => $config->get('module'),
             'controller' => $config->get('controller'),
-            'action'     => $this->_getAction($request, $config->get('action')),
+            'action'     => $config->get('action'),
         ];
         $request_uri       = str_replace('\\', '/', $request->getUri()->getPath());
         $url               = trim($request_uri, '/');
@@ -61,7 +61,9 @@ class Route implements IRoute {
             $route_info['controller'] = $url_info[$index];
             $index++;
             $action               = isset($url_info[$index]) ? $url_info[$index] : '';
-            $route_info['action'] = $this->_getAction($request, $action);
+            if($action){
+                $route_info['action'] = $action;
+            }
         }
         $version = NULL;
         if ($config->get('multi_version')) {
@@ -70,25 +72,6 @@ class Route implements IRoute {
         }
         $route_info['controller_class'] = $this->_getController($route_info, $isControllerFront, $version);
         $request->setRouteInfo($route_info);
-        return $result;
-    }
-
-    /**
-     * @param WebRequest $request
-     * @param            $action
-     *
-     * @return string
-     */
-    private function _getAction(WebRequest $request, $action) {
-        $method = strtolower($request->getMethod());
-        $format = ucfirst($request->getFormat());
-        $result = $method . ucfirst($action) . $format;
-        if (strpos($action, '.') !== FALSE) {
-            $action_info = explode('.', $action);
-            array_pop($action_info);
-            $action = implode('.', $action_info);
-            $result = $method . ucfirst($action) . $format;
-        }
         return $result;
     }
 
@@ -111,7 +94,7 @@ class Route implements IRoute {
         if (!$isControllerFront) {
             $controller_name .= '\\controller';
         }
-        $controller_name .= '\\' . ucfirst($routed['controller']);
+        $controller_name .= '\\' . ucfirst($routed['controller']).'Controller';
         return $controller_name;
     }
 }

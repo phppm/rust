@@ -39,7 +39,7 @@ final class WebApplication extends Application {
         $this->request     = $request;
         $capture_exception = new Capture();
         $capture_exception->pushHandler(new ExceptionHandler());
-        $capture_exception->register();
+        //TODO:$capture_exception->register();
         return $this;
     }
 
@@ -58,7 +58,6 @@ final class WebApplication extends Application {
         try {
             //初始化
             $this->init();
-            //TODO:路由开始前?
             //路由
             $route_config = $this->config->get('route');
             $router             = new Router(new Config($route_config));

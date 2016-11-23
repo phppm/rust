@@ -13,6 +13,8 @@ final Class Rust {
      */
     private static $config;
 
+    private static $app;
+
     /**
      * 构建应用实例
      *

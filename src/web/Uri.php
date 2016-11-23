@@ -247,10 +247,6 @@ class Uri implements UriInterface {
         return $this->mainDomain;
     }
 
-    public function getPhysicalPath() {
-        return $this->physicalPath;
-    }
-
     public function getPort() {
         return $this->port;
     }

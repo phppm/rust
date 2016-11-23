@@ -221,29 +221,7 @@ class WebRequest implements RequestInterface {
         }
         return NULL;
     }
-    /*
-    protected function initialize() {
 
-        //initialize method version headers
-        $uri      = $this->initializeUri($path);
-        $instance = $instance->withMethod($method)->withProtocolVersion($version)->withHeaders($headers)->withUri($uri);
-        //initialize body stream
-        $bodyStream = $this->initializeInputStream();
-        return $instance->withBody($bodyStream)->withCookies($_COOKIE)->withParameters($_REQUEST)->withUploadedFiles(self::normalizeFiles($_FILES));
-    }
-
-    private function initializeUri($path) {
-        $scheme = 'on' == getenv('HTTPS') ? 'https' : 'http';
-        $port   = getenv('SERVER_PORT');
-        $port   = $port ? $port : 80;
-        $host   = getenv('HTTP_HOST');
-        $host   = $host ? $host : getenv('SERVER_NAME');
-        $query  = getenv('QUERY_STRING');
-        $query  = $query ? $query : NULL;
-        $uri    = new Uri();
-        $uri    = $uri->withScheme($scheme)->withHost($host)->withPath($path)->withPort($port)->withQuery($query);
-        return $uri;
-    }*/
     /**
      * @param string $name
      * @param null   $initValue
