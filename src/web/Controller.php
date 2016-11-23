@@ -179,10 +179,27 @@ abstract class Controller implements IController {
     /**
      * 输出json
      *
+     * @param int    $code
+     * @param string $msg
+     * @param        $data
+     */
+    final public function r($code, $msg, $data) {
+        $result = [
+            'code' => $code,
+            'msg'  => $msg,
+            'data' => $data,
+        ];
+        $this->outputJson($result);
+    }
+
+    /**
+     * 输出json
+     *
      * @param $result
      */
     final public function outputJson($result) {
         header('Content-type: application/json');
-        die(json_encode($result));
+        $encodeOption = 15;
+        die(json_encode($result, $encodeOption));
     }
 }

@@ -9,13 +9,14 @@ use rust\fso\Dir;
  */
 class Path {
     const DEFAULT_CONFIG_PATH     = 'resource/config/';
-    const DEFAULT_TABLE_PATH      = 'resource/config/share/table/';
+    const DEFAULT_TABLE_PATH      = 'resource/table/';
     const DEFAULT_SQL_PATH        = 'resource/sql/';
     const DEFAULT_LOG_PATH        = 'resource/logs/';
-    const DEFAULT_CACHE_PATH      = 'resource/cache/';
+    const DEFAULT_CACHE_PATH      = 'resource/cached/';
     const DEFAULT_MODEL_PATH      = 'resource/model/';
     const DEFAULT_ROUTING_PATH    = 'resource/routing';
     const DEFAULT_MIDDLEWARE_PATH = 'resource/middleware';
+    const DEFAULT_VIEW_PATH       = 'resource/views/';
     private static $rootPath       = NULL;
     private static $configPath     = NULL;
     private static $sqlPath        = NULL;
@@ -25,6 +26,7 @@ class Path {
     private static $tablePath      = NULL;
     private static $routingPath    = NULL;
     private static $middlewarePath = NULL;
+    private static $viewPath       = NULL;
 
     public static function init($rootPath) {
         self::setRootPath($rootPath);
@@ -37,6 +39,7 @@ class Path {
         self::$tablePath      = self::$rootPath . self::DEFAULT_TABLE_PATH;
         self::$routingPath    = self::$rootPath . self::DEFAULT_ROUTING_PATH;
         self::$middlewarePath = self::$rootPath . self::DEFAULT_MIDDLEWARE_PATH;
+        self::$viewPath       = self::$rootPath . self::DEFAULT_VIEW_PATH;
     }
 
     public static function getRootPath() {
@@ -77,6 +80,10 @@ class Path {
 
     public static function getMiddlewarePath() {
         return self::$middlewarePath;
+    }
+
+    public static function getViewPath() {
+        return self::$viewPath;
     }
 
     private static function setRootPath($rootPath) {
