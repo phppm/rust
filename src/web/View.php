@@ -29,22 +29,23 @@ final class View implements IView {
      */
     private $_config;
     /**
-     * @var Request
+     * @var Uri
      */
-    private $_request;
+    private $_uri;
     private $_compiler;
 
     /**
      * View constructor.
      * @param $app_config
-     * @param $request
+     * @param WebRequest $request
      */
-    public function __construct($app_config, $request) {
+    public function __construct(Config $config, Uri $uri) {
         $this->_data['vars'] = [
             'view' => &$this
         ];
-        $this->_config = $app_config;
-        $this->_request = $request;
+        $this->_config = $config;
+        $this->setPath($uri->getPhysicalPath());
+        $this->_uri = $uri;
     }
 
     /**

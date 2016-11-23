@@ -6,11 +6,9 @@
 namespace rust\web;
 
 use rust\util\Config;
-use rust\http\Request;
-use rust\http\Response;
 use rust\http\URL;
 use rust\interfaces\IController;
-use rust\util\Registry;
+use rust\Path;
 
 /**
  * Class Controller
@@ -43,18 +41,15 @@ abstract class Controller implements IController {
 
     /**
      * Controller constructor.
-     * @param Request $request
-     * @param Response $response
+     * @param WebRequest $request
+     * @param WebResponse $response
      * @param Config $app_config
      */
-    final public function __construct($request, &$response) {
-        $app_config = App::getConfig();
-        $this->_config = $app_config;
+    final public function __construct(WebRequest $request, WebResponse &$response, Config $config) {
+        $this->_config = $config;
         $this->_request = $request;
         $this->_response = $response;
-        $path_config = $app_config->get('path');
-        $this->_view = new View($app_config, $request);
-        $this->_view->setPath($path_config->get('view'));
+        $this->_view = new View($config, $request->getUri());
         //写入公共环境变量
         $this->env('http_request', $request);
     }

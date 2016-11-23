@@ -19,7 +19,7 @@ class WebRequest implements RequestInterface {
     private $method;
     /** @var null|string */
     private $requestTarget;
-    /** @var null|UriInterface */
+    /** @var null|Uri */
     private $uri;
     //
     private $format;
