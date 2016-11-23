@@ -3,6 +3,7 @@ namespace rust\util;
 use DateTime;
 use Exception;
 use rust\exception\RuntimeException;
+use rust\Path;
 
 defined('RUST_END_LINE') or define('RUST_END_LINE', "\r\n");
 
@@ -69,12 +70,7 @@ final class Log {
      * @throws RuntimeException
      */
     private function __construct() {
-        $app_config = Registry::get('app_config');
-        if (!$app_config || !$app_config instanceof Config) {
-            throw new RuntimeException('not found app config');
-        }
-        $path_config = $app_config->get('path');
-        $path        = rtrim($path_config->get('log'), '\\/');
+        $path = rtrim(Path::getLogPath(), '\\/');
         if (empty($path)) {
             throw new RuntimeException('The log could not be initialized. Check that log path have been set.');
         }
