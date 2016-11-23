@@ -11,10 +11,6 @@ use rust\util\Config;
  */
 final class Router {
     /**
-     * @var Config 路由器设置
-     */
-    private $_config;
-    /**
      * @var array 路由信息
      */
     private $_route;
@@ -22,12 +18,10 @@ final class Router {
     /**
      * 路由器构造
      *
-     * @param \rust\util\Config $config
+     * @param array $config
      */
     public function __construct($config) {
-        $this->_config = $config;
-        $default_route_config = $config->get('default');
-        $this->_route = new Route($default_route_config);
+        $this->_route = new Route(new Config($config));
     }
 
 
