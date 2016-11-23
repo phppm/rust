@@ -17,6 +17,8 @@ class Uri implements UriInterface {
     private static $charUnreserved = 'a-zA-Z0-9_\-\.~';
     private static $charSubDelims  = '!\$&\'\(\)\*\+,;=';
     private static $replaceQuery   = ['=' => '%3D', '&' => '%26'];
+    /** @var string physical path */
+    private $physicalPath = '';
     /** @var string Uri scheme. */
     private $scheme = '';
     /** @var string Uri user info. */
@@ -31,6 +33,10 @@ class Uri implements UriInterface {
     private $query = '';
     /** @var string Uri fragment. */
     private $fragment = '';
+    /**
+     * @var string Uri main domain.
+     */
+    private $mainDomain = '';
 
     /**
      * @param string $uri URI to parse
@@ -237,6 +243,14 @@ class Uri implements UriInterface {
         return $this->host;
     }
 
+    public function getMainDomain() {
+        return $this->mainDomain;
+    }
+
+    public function getPhysicalPath() {
+        return $this->physicalPath;
+    }
+
     public function getPort() {
         return $this->port;
     }
@@ -298,8 +312,11 @@ class Uri implements UriInterface {
         if ($this->host === $host) {
             return $this;
         }
-        $new       = clone $this;
-        $new->host = $host;
+        $hostInfo        = explode('.', $host);
+        $mainDomain      = is_array($hostInfo) && count($hostInfo) > 1 ? implode('.', array_slice($hostInfo, -2)) : '';
+        $new             = clone $this;
+        $new->host       = $host;
+        $new->mainDomain = $mainDomain;
         return $new;
     }
 

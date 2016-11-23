@@ -11,7 +11,7 @@ class Path {
     const DEFAULT_CONFIG_PATH     = 'resource/config/';
     const DEFAULT_TABLE_PATH      = 'resource/config/share/table/';
     const DEFAULT_SQL_PATH        = 'resource/sql/';
-    const DEFAULT_LOG_PATH        = 'resource/log/';
+    const DEFAULT_LOG_PATH        = 'resource/logs/';
     const DEFAULT_CACHE_PATH      = 'resource/cache/';
     const DEFAULT_MODEL_PATH      = 'resource/model/';
     const DEFAULT_ROUTING_PATH    = 'resource/routing';

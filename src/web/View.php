@@ -1,10 +1,9 @@
 <?php
 namespace rust\web;
 
+use rust\Path;
 use rust\http\URL;
 use rust\util\Buffer;
-use rust\util\Config;
-use rust\http\Request;
 use rust\template\Compiler;
 use rust\interfaces\IView;
 use rust\fso\FileSystemObject;
@@ -25,10 +24,6 @@ final class View implements IView {
     ];
     private $_blockPre = '%%BLOCK__', $_blockSuf = '__BLOCK%%';
     /**
-     * @var Config
-     */
-    private $_config;
-    /**
      * @var Uri
      */
     private $_uri;
@@ -36,14 +31,12 @@ final class View implements IView {
 
     /**
      * View constructor.
-     * @param $app_config
-     * @param WebRequest $request
+     * @param Uri $uri
      */
-    public function __construct(Config $config, Uri $uri) {
+    public function __construct(Uri $uri) {
         $this->_data['vars'] = [
             'view' => &$this
         ];
-        $this->_config = $config;
         $this->setPath($uri->getPhysicalPath());
         $this->_uri = $uri;
     }
@@ -116,8 +109,6 @@ final class View implements IView {
     }
 
     /**
-     *
-     * @return bool
      */
     public function endLayout() {
         if (NULL === $this->_curLayout) {
@@ -202,7 +193,7 @@ final class View implements IView {
             $site = $params;
             $params = [];
         }
-        URL::setDomain($this->_request->domain, $this->_request->mainDomain);
+        URL::setDomain($this->_uri->getHost(), $this->_uri->getMainDomain());
         $url = URL::create($path, $site, $params);
         return $url;
     }
@@ -276,9 +267,8 @@ final class View implements IView {
      */
     private function _getCompiler() {
         if (!$this->_compiler) {
-            $path_config = $this->_config->get('path');
             $fso = new FileSystemObject();
-            $this->_compiler = new Compiler($fso, $path_config->get('cache'), $this->_path);
+            $this->_compiler = new Compiler($fso, Path::getCachePath(), $this->_path);
         }
 
         return $this->_compiler;

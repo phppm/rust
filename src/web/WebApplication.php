@@ -60,9 +60,8 @@ final class WebApplication extends Application {
             $this->init();
             //TODO:路由开始前?
             //路由
-            $router_config_name = $this->config->get('router');
-            $router_config      = new Config($router_config_name);
-            $router             = new Router($router_config);
+            $route_config = $this->config->get('route');
+            $router             = new Router(new Config($route_config));
             if (!$request->isRouted()) {
                 $router->route($request);
             }

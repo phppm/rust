@@ -1,17 +1,17 @@
 <?php
 /**
  * controller base class
+ *
  * @author rustysun.cn@gmail.com
  */
 namespace rust\web;
-
-use rust\util\Config;
+use rust\common\Config;
 use rust\http\URL;
 use rust\interfaces\IController;
-use rust\Path;
 
 /**
  * Class Controller
+ *
  * @package rust\web
  */
 abstract class Controller implements IController {
@@ -25,11 +25,11 @@ abstract class Controller implements IController {
      */
     private $_config;
     /**
-     * @var Request
+     * @var WebRequest
      */
     private $_request;
     /**
-     * @var Response
+     * @var WebResponse
      */
     private $_response;
 
@@ -41,15 +41,16 @@ abstract class Controller implements IController {
 
     /**
      * Controller constructor.
-     * @param WebRequest $request
+     *
+     * @param WebRequest  $request
      * @param WebResponse $response
-     * @param Config $app_config
+     * @param Config      $config
      */
     final public function __construct(WebRequest $request, WebResponse &$response, Config $config) {
-        $this->_config = $config;
-        $this->_request = $request;
+        $this->_config   = $config;
+        $this->_request  = $request;
         $this->_response = $response;
-        $this->_view = new View($config, $request->getUri());
+        $this->_view     = new View($request->getUri());
         //写入公共环境变量
         $this->env('http_request', $request);
     }
@@ -59,9 +60,7 @@ abstract class Controller implements IController {
      * @return bool
      */
     public function init() {
-        $app_config = $this->_config;
-        $router_config = new Config($app_config->get('router'));
-        $base_uri = $router_config->get('base_uri');
+        $base_uri               = $this->_config->get('route.base_uri');
         $this->_env['base_url'] = $base_uri;
         return TRUE;
     }
@@ -79,7 +78,6 @@ abstract class Controller implements IController {
             if (!$key) {
                 return FALSE;
             }
-
             foreach ($key as $k => $v) {
                 $this->_env[$k] = $v;
             }
@@ -87,10 +85,8 @@ abstract class Controller implements IController {
             if (isset($this->_env[$key])) {
                 return $this->_env[$key];
             }
-
             return NULL;
         }
-
         return TRUE;
     }
 
@@ -127,12 +123,12 @@ abstract class Controller implements IController {
     final public function render($tpl) {
         //强制将环境变量 作为common数据 赋给模板
         $this->assign('common', $this->_env);
-
         return $this->_view->render($tpl);
     }
 
     /**
      * 获取配置实例
+     *
      * @return Config
      */
     final public function getConfig() {
@@ -163,8 +159,8 @@ abstract class Controller implements IController {
     /**
      * 页面转向
      *
-     * @param string $path 跳转路径
-     * @param array $params 路径参数
+     * @param string $path   跳转路径
+     * @param array  $params 路径参数
      */
     final public function redirect($path, $params = []) {
         $url = URL::create($path, $params);
@@ -173,6 +169,7 @@ abstract class Controller implements IController {
 
     /**
      * 设置视图路径
+     *
      * @param $path
      */
     final public function setViewPath($path) {
@@ -181,6 +178,7 @@ abstract class Controller implements IController {
 
     /**
      * 输出json
+     *
      * @param $result
      */
     final public function outputJson($result) {

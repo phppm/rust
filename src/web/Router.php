@@ -18,10 +18,10 @@ final class Router {
     /**
      * 路由器构造
      *
-     * @param array $config
+     * @param Config $config
      */
     public function __construct($config) {
-        $this->_route = new Route(new Config($config));
+        $this->_route = new Route($config);
     }
 
 
