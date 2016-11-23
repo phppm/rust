@@ -94,21 +94,21 @@ class Route implements IRoute {
 
     /**
      * @param array $routed
-     * @param bool  $isControllerFirst
+     * @param bool  $isControllerFront
      * @param null  $version
      *
      * @return string
      */
-    private function _getController($routed, $isControllerFirst = FALSE, $version = NULL) {
+    private function _getController($routed, $isControllerFront = FALSE, $version = NULL) {
         $controller_name = isset($routed['package']) && $routed['package'] ? '\\' . $routed['package'] : '';
         if ($version) {
             $controller_name .= '\\v' . $version;
         }
-        if ($isControllerFirst) {
+        if ($isControllerFront) {
             $controller_name .= '\\controller';
         }
         $controller_name .= isset($routed['module']) && $routed['module'] ? '\\' . $routed['module'] : '';
-        if (!$isControllerFirst) {
+        if (!$isControllerFront) {
             $controller_name .= '\\controller';
         }
         $controller_name .= '\\' . ucfirst($routed['controller']);
