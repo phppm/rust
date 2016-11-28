@@ -31,6 +31,13 @@ class DB {
         return $this->command;
     }
 
+    /**
+     * @param       $sid
+     * @param       $data
+     * @param array $options
+     *
+     * @return int|null|Statement|string
+     */
     public static function exec($sid, $data, $options = []) {
         $sqlMap   = SqlMap::getInstance()->getSql($sid, $data, $options);
         $conn_key = Table::getInstance()->getDatabase($sqlMap['table']);
@@ -48,7 +55,9 @@ class DB {
             //TODO:抛出异常
             return NULL;
         }
-        return $connection->getDBO($conn_key)->execute($sqlMap['sql']);
+        $dboResult = $connection->getDBO($conn_key)->execute($sqlMap);
+        $formatter = new ResultFormatter($dboResult);
+        return $formatter->format();
     }
 
     /**

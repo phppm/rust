@@ -1,8 +1,7 @@
 <?php
 namespace rust\dbo;
-
-use \PDO;
-use \PDOStatement;
+use PDO;
+use PDOStatement;
 
 /**
  * DB Statement
@@ -29,6 +28,7 @@ class Statement extends PDOStatement {
         return parent::fetch(PDO::FETCH_ASSOC);
     }
 
+
     /**
      * Get value from column, from last row
      *
@@ -47,7 +47,6 @@ class Statement extends PDOStatement {
      */
     public function closeCursor() {
         $this->last_row = NULL;
-
         return parent::closeCursor();
     }
 }

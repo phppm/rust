@@ -42,7 +42,7 @@ class SqlParser {
         $map['limit']   = isset($map['limit']) ?? [];
         $map['rw']      = 'w';
         if (preg_match('/^\s*select/i', $map['sql'])) {
-            $map[$key]['rw'] = 'r';
+            $map['rw'] = 'r';
         }
         $map['result_type'] = $this->checkResultType(strtolower($expKey[0]));
         $map['table']       = $this->getTable($map);
