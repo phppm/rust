@@ -24,6 +24,7 @@ class WebRequest implements RequestInterface {
     //
     private $format;
     private $requestTime;
+    private $requestTimeMS;
     private $remoteAddress;
     private $routedInfo;
     private $parameters;
@@ -37,7 +38,8 @@ class WebRequest implements RequestInterface {
      */
     public function initRequestByServerEnv() {
         //init request time
-        $this->requestTime = getenv('REQUEST_TIME');
+        $this->requestTime   = getenv('REQUEST_TIME');
+        $this->requestTimeMS = getenv('REQUEST_TIME_FLOAT');
         //init ip
         $this->remoteAddress = getenv('REMOTE_ADDR');
         //----------
@@ -105,10 +107,19 @@ class WebRequest implements RequestInterface {
             $uri = $uri->withPort($env_port);
         }
         $env_uri = getenv('REQUEST_URI');
+        $path    = NULL;
         if ($env_uri) {
-            $uri = $uri->withPath(current(explode('?', $env_uri)));
+            $path = current(explode('?', $env_uri));
+            $uri  = $uri->withPath($path);
         }
-        $env_query = getenv('QUERY_STRING');
+        //TODO:remove默认格式
+        $format = 'json';
+        if ($path && FALSE !== strpos('.', $format)) {
+            $pathInfo = explode('.', $path);
+            $format   = $pathInfo && is_array($pathInfo) ? array_pop($pathInfo) : $format;
+        }
+        $this->format = strtolower($format);
+        $env_query    = getenv('QUERY_STRING');
         if ($env_query) {
             $uri = $uri->withQuery($env_query);
         }
@@ -244,7 +255,8 @@ class WebRequest implements RequestInterface {
     }
 
     public function getFormat() {
-        return $this->format;
+        $format = $this->format ? strtolower($this->format) : NULL;
+        return $format;
     }
 
     /**

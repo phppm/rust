@@ -8,7 +8,6 @@ namespace rust\web;
 use rust\common\Config;
 use rust\http\URL;
 use rust\interfaces\IController;
-use rust\util\Result;
 
 /**
  * Class Controller
@@ -184,17 +183,6 @@ abstract class Controller implements IController {
      */
     final public function outputJson($result) {
         header('Content-type: application/json');
-        $encodeOption = 15;
-        die(json_encode($result, $encodeOption));
-    }
-
-    /**
-     * @param int  $code
-     * @param null $msg
-     * @param null $data
-     */
-    final public function r($code, $msg = NULL, $data = NULL) {
-        $result = new Result($code, $msg, $data);
-        $this->outputJson($result);
+        die(json_encode($result));
     }
 }

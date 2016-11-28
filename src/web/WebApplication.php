@@ -5,10 +5,9 @@
  * @author rustysun.cn@gmail.com
  */
 namespace rust\web;
+use Exception;
 use rust\Application;
 use rust\exception\ErrorCode;
-use rust\exception\handler\Capture;
-use rust\exception\handler\ExceptionHandler;
 use rust\exception\HttpException;
 use rust\exception\RustException;
 use rust\util\Config;
@@ -29,6 +28,13 @@ final class WebApplication extends Application {
     protected        $status = 0;
 
     /**
+     * @return WebRequest
+     */
+    public function getRequest() {
+        return $this->request;
+    }
+
+    /**
      * @return $this
      */
     public function init() {
@@ -36,10 +42,7 @@ final class WebApplication extends Application {
         //实例化一个Request,用来获取请求
         $request = new WebRequest();
         $request->initRequestByServerEnv();
-        $this->request     = $request;
-        $capture_exception = new Capture();
-        $capture_exception->pushHandler(new ExceptionHandler());
-        //TODO:$capture_exception->register();
+        $this->request = $request;
         return $this;
     }
 
@@ -60,7 +63,7 @@ final class WebApplication extends Application {
             $this->init();
             //路由
             $route_config = $this->config->get('route');
-            $router             = new Router(new Config($route_config));
+            $router       = new Router(new Config($route_config));
             if (!$request->isRouted()) {
                 $router->route($request);
             }
@@ -78,12 +81,13 @@ final class WebApplication extends Application {
                 throw new RustException(ErrorCode::METHOD_NOT_FOUND);
             }
             call_user_func_array([$instance, $action], []);
-        } catch (RustException $e) {
+        } catch (Exception $e) {
             $this->_run = FALSE;
             $code       = $e->getCode();
             if (404 == $code || ErrorCode::METHOD_NOT_FOUND == $code) {
                 $this->status = 404;
             }
+            throw $e;
         }
         //TODO:路由结束后?
         //取出返回给客户端的数据

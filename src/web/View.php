@@ -37,7 +37,7 @@ final class View implements IView {
         $this->_data['vars'] = [
             'view' => &$this,
         ];
-        $this->setPath(Path::getViewPath());
+        $this->setPath(Path::getRootPath());
         $this->_uri = $uri;
     }
 

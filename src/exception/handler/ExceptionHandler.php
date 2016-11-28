@@ -5,12 +5,14 @@
  * @author Filipe Dobreira <http://github.com/filp>
  */
 namespace rust\exception\handler;
+use rust\exception\BaseException;
 use rust\exception\Formatter;
 use rust\exception\Inspector;
-use rust\exception\web\JsonException;
 use rust\http\Response;
+use rust\Rust;
 use rust\util\Log;
 use rust\util\Result;
+use rust\web\WebApplication;
 
 /**
  * a Exception Handler.
@@ -50,9 +52,19 @@ class ExceptionHandler {
             // ErrorExceptions wrap the php-error types within the "severity" property
             ////$code = Misc::translateErrorCode($inspector->getException()->getSeverity());
         }
+        $app    = Rust::getApp();
+        $format = NULL;
+        if ($app instanceof WebApplication) {
+            $request = $app->getRequest();
+            $format  = $request->getFormat();
+        }
         $response = new Response();
-        if ($exception instanceof JsonException) {
-            $exception_result = new Result($code, $exception->getMessage(), $exception->getData());
+        if ('json' === $format) {
+            if ($exception instanceof BaseException) {
+                $exception_result = $exception->toResult();
+            } else {
+                $exception_result = new Result($exception->getCode(), $exception->getMessage(), NULL);
+            }
             $response->header('Content-Type', 'application/json');
             $response->write(json_encode($exception_result, JSON_UNESCAPED_UNICODE));
             $response->send();

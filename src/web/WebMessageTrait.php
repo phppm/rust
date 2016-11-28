@@ -93,6 +93,9 @@ trait WebMessageTrait {
         return $new;
     }
 
+    /**
+     * @return StreamInterface|\rust\stream\PumpStream|\rust\stream\Stream|string
+     */
     public function getBody() {
         if (!$this->stream) {
             $this->stream = StreamUtil::streamFor();
