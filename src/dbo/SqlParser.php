@@ -44,10 +44,10 @@ class SqlParser {
         if (preg_match('/^\s*select/i', $map['sql'])) {
             $map['rw'] = 'r';
         }
-        $map['result_type'] = $this->checkResultType(strtolower($expKey[0]));
-        $map['table']       = $this->getTable($map);
         $map['sql_type']    = $this->getSqlType($map['sql']);
-        $this->sqlMap       = $map;
+        $map['result_type'] = $this->checkResultType($map['sql_type']); //strtolower($expKey[0])
+        $map['table']       = $this->getTable($map);
+        $this->sqlMap = $map;
         return $this;
     }
 
@@ -70,6 +70,7 @@ class SqlParser {
      */
     private function checkResultType($mapKey) {
         switch ($mapKey) {
+        case 'create' :
         case 'insert' :
             $resultType = ISqlResultType::LAST_INSERT_ID;
             break;

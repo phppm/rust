@@ -13,23 +13,9 @@ use rust\Rust;
  */
 class DB {
     /**
-     * @var Command
-     */
-    protected $command;
-    /**
      * @var [Connection]
      */
     protected static $connections;
-
-    /**
-     * Create DB Command
-     *
-     * @return Command
-     */
-    public function createCommand() {
-        $this->command = new Command();
-        return $this->command;
-    }
 
     /**
      * @param       $sid
@@ -56,16 +42,7 @@ class DB {
             return NULL;
         }
         $dboResult = $connection->getDBO($conn_key)->execute($sqlMap);
-        $formatter = new ResultFormatter($dboResult);
+        $formatter = new ResultFormatter($dboResult, $sqlMap['result_type']);
         return $formatter->format();
-    }
-
-    /**
-     * 获取 最近执行的SQL
-     *
-     * @return string
-     */
-    final public function getLastSQL() {
-        return $this->command->toString();
     }
 }
