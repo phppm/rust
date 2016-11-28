@@ -1,6 +1,6 @@
 <?php
 namespace rust\exception\storage;
-use rust\exception\BaseException;
+use rust\exception\SystemException;
 
-class SQLTableException extends BaseException {
+class SQLTableException extends SystemException {
 }

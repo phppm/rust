@@ -1,8 +1,6 @@
 <?php
 namespace rust\exception;
 
-use rust\exception\RustException;
-
 /**
  * Class CustomException
  *

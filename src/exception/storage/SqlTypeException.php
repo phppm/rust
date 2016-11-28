@@ -17,5 +17,5 @@
 namespace rust\exception\storage;
 use rust\exception\SystemException;
 
-class SqlMapCanNotFindException extends SystemException {
+class SqlTypeException extends SystemException {
 }

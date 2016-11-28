@@ -48,6 +48,7 @@ class DB {
     public static function exec($sid, $data, $options = []) {
         $sqlMap   = SqlMap::getInstance()->getSql($sid, $data, $options);
         print_r($sqlMap);
+        die;
         $database = Table::getInstance()->getDatabase($sqlMap['table']);
         var_dump($database);
         die;

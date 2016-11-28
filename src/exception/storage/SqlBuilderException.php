@@ -15,7 +15,7 @@
  *    limitations under the License.
  */
 namespace rust\exception\storage;
-use rust\exception\SystemException;
+use rust\exception\BaseException;
 
-class SqlMapCanNotFindException extends SystemException {
+class SqlBuilderException extends BaseException {
 }
