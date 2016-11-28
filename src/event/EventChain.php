@@ -1,133 +1,112 @@
 <?php
 namespace rust\event;
 class EventChain {
-    private $beforeMap = [];
-    private $afterMap  = [];
-    private $event     = NULL;
+    private static $beforeMap = [];
+    private static $afterMap  = [];
 
-    public function __construct(Event $event) {
-        $this->beforeMap = [];
-        $this->afterMap = [];
-        $this->event = $event;
+    public static function clear() {
+        self::$beforeMap = [];
+        self::$afterMap  = [];
     }
 
     /**
      * 连接N个传入的事件为事件链
+     *
+     * @param args
+     *
      * @return bool
      */
-    public function join() {
+    public static function join() {
         $argNum = func_num_args();
         if ($argNum < 2) {
             return FALSE;
         }
         $args = func_get_args();
         $beforeEvt = NULL;
-        $afterEvt = NULL;
+        $afterEvt  = NULL;
         foreach ($args as $evt) {
             if (NULL === $beforeEvt) {
                 $beforeEvt = $evt;
                 continue;
             }
             $afterEvt = $evt;
-            $this->after($beforeEvt, $afterEvt);
+            self::after($beforeEvt, $afterEvt);
             $beforeEvt = $afterEvt;
         }
-        return TRUE;
     }
 
     /**
      * 断开两个事件链接
+     *
      * @param $beforeEvt
      * @param $afterEvt
      */
-    public function breakChain($beforeEvt, $afterEvt) {
-        $this->crackAfterChain($beforeEvt, $afterEvt);
-        $this->crackBeforeChain($beforeEvt, $afterEvt);
+    public static function breakChain($beforeEvt, $afterEvt) {
+        self::crackAfterChain($beforeEvt, $afterEvt);
+        self::crackBeforeChain($beforeEvt, $afterEvt);
     }
 
-    /**
-     * @param $beforeEvt
-     * @param $afterEvt
-     * @return bool
-     */
-    public function after($beforeEvt, $afterEvt) {
-        if (!isset($this->afterMap[$beforeEvt])) {
-            $this->afterMap[$beforeEvt] = [];
+    public static function after($beforeEvt, $afterEvt) {
+        if (!isset(self::$afterMap[$beforeEvt])) {
+            self::$afterMap[$beforeEvt] = [$afterEvt => 1];
+            return TRUE;
         }
-        $this->afterMap[$beforeEvt][$afterEvt] = 1;
-        return TRUE;
+        self::$afterMap[$beforeEvt][$afterEvt] = 1;
     }
 
-    /**
-     * @param $beforeEvt
-     * @param $afterEvt
-     * @return bool
-     */
-    public function before($beforeEvt, $afterEvt) {
-        $this->after($beforeEvt, $afterEvt);
-        if (!isset($this->beforeMap[$afterEvt])) {
-            $this->beforeMap[$afterEvt] = [$beforeEvt => 0];
+    public static function before($beforeEvt, $afterEvt) {
+        self::after($beforeEvt, $afterEvt);
+        if (!isset(self::$beforeMap[$afterEvt])) {
+            self::$beforeMap[$afterEvt] = [$beforeEvt => 0];
+            return TRUE;
         }
-        $this->beforeMap[$afterEvt][$beforeEvt] = 0;
-        return TRUE;
+        self::$beforeMap[$afterEvt][$beforeEvt] = 0;
     }
 
-    public function fireEventChain($evtName) {
-        if (!isset($this->afterMap[$evtName]) || !$this->afterMap[$evtName]) {
+    public static function fireEventChain($evtName) {
+        if (!isset(self::$afterMap[$evtName]) || !self::$afterMap[$evtName]) {
             return FALSE;
         }
-        foreach ($this->afterMap[$evtName] as $afterEvt => $count) {
-            $this->fireAfterEvent($evtName, $afterEvt);
+        foreach (self::$afterMap[$evtName] as $afterEvt => $count) {
+            self::fireAfterEvent($evtName, $afterEvt);
         }
         return TRUE;
     }
 
-    private function fireAfterEvent($beforeEvt, $afterEvt) {
-        $this->fireBeforeEvent($beforeEvt, $afterEvt);
-        if (TRUE !== $this->isBeforeEventFired($afterEvt)) {
+    private static function fireAfterEvent($beforeEvt, $afterEvt) {
+        self::fireBeforeEvent($beforeEvt, $afterEvt);
+        if (TRUE !== self::isBeforeEventFired($afterEvt)) {
             return FALSE;
         }
-        $this->event->fire($afterEvt);
-        $this->clearBeforeEventBind($afterEvt);
-        return TRUE;
+        Event::fire($afterEvt);
+        self::clearBeforeEventBind($afterEvt);
     }
 
-    /**
-     * @param $beforeEvt
-     * @param $afterEvt
-     * @return bool
-     */
-    private function fireBeforeEvent($beforeEvt, $afterEvt) {
-        if (!isset($this->beforeMap[$afterEvt])) {
+    private static function fireBeforeEvent($beforeEvt, $afterEvt) {
+        if (!isset(self::$beforeMap[$afterEvt])) {
             return FALSE;
         }
-        if (!isset($this->beforeMap[$afterEvt][$beforeEvt])) {
+        if (!isset(self::$beforeMap[$afterEvt][$beforeEvt])) {
             return FALSE;
         }
-        $this->beforeMap[$afterEvt][$beforeEvt]++;
-        return TRUE;
+        self::$beforeMap[$afterEvt][$beforeEvt]++;
     }
 
-    /**
-     * @param $afterEvt
-     * @return bool
-     */
-    private function clearBeforeEventBind($afterEvt) {
-        if (!isset($this->beforeMap[$afterEvt])) {
+    private static function clearBeforeEventBind($afterEvt) {
+        if (!isset(self::$beforeMap[$afterEvt])) {
             return FALSE;
         }
         $decrease = function (&$v) {
             return $v--;
         };
-        array_walk($this->beforeMap[$afterEvt], $decrease);
-        return TRUE;
+        array_walk(self::$beforeMap[$afterEvt], $decrease);
     }
 
-    private function isBeforeEventFired($afterEvt) {
-        if (!isset($this->beforeMap[$afterEvt])) {
+    private static function isBeforeEventFired($afterEvt) {
+        if (!isset(self::$beforeMap[$afterEvt])) {
             return TRUE;
         }
-        foreach ($this->beforeMap[$afterEvt] as $count) {
+        foreach (self::$beforeMap[$afterEvt] as $count) {
             if ($count < 1) {
                 return FALSE;
             }
@@ -135,25 +114,25 @@ class EventChain {
         return TRUE;
     }
 
-    private function crackAfterChain($beforeEvt, $afterEvt) {
-        if (!isset($this->afterMap[$beforeEvt])) {
+    private static function crackAfterChain($beforeEvt, $afterEvt) {
+        if (!isset(self::$afterMap[$beforeEvt])) {
             return FALSE;
         }
-        if (!isset($this->afterMap[$beforeEvt][$afterEvt])) {
+        if (!isset(self::$afterMap[$beforeEvt][$afterEvt])) {
             return FALSE;
         }
-        unset($this->afterMap[$beforeEvt][$afterEvt]);
+        unset(self::$afterMap[$beforeEvt][$afterEvt]);
         return TRUE;
     }
 
-    private function crackBeforeChain($beforeEvt, $afterEvt) {
-        if (!isset($this->beforeMap[$afterEvt])) {
+    private static function crackBeforeChain($beforeEvt, $afterEvt) {
+        if (!isset(self::$beforeMap[$afterEvt])) {
             return FALSE;
         }
-        if (!isset($this->beforeMap[$afterEvt][$beforeEvt])) {
+        if (!isset(self::$beforeMap[$afterEvt][$beforeEvt])) {
             return FALSE;
         }
-        unset($this->beforeMap[$afterEvt][$beforeEvt]);
+        unset(self::$beforeMap[$afterEvt][$beforeEvt]);
         return TRUE;
     }
 }

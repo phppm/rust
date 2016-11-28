@@ -1,73 +1,76 @@
 <?php
 namespace rust\event;
+/**
+ * Class Event
+ *
+ * @package rust\event
+ */
 class Event {
-    private $evtMap   = [];
-    private $evtChain = NULL;
+    private static $evtMap = [];
     const NORMAL_EVENT = 1;
     const ONCE_EVENT   = 2;
 
-    public function __construct() {
-        $this->evtMap = [];
-        $this->evtChain = new EventChain($this);
+    public static function clear() {
+        self::$evtMap = [];
+        EventChain::clear();
     }
 
-    public function getEventChain() {
-        return $this->evtChain;
-    }
-
-    public function register($evtName) {
-        if (!isset($this->evtMap[$evtName])) {
-            $this->evtMap[$evtName] = [];
+    public static function register($evtName) {
+        if (!isset(self::$evtMap[$evtName])) {
+            self::$evtMap[$evtName] = [];
         }
     }
 
-    public function unRegister($evtName) {
-        if (isset($this->evtMap[$evtName])) {
-            unset($this->evtMap[$evtName]);
+    public static function unregister($evtName) {
+        if (isset(self::$evtMap[$evtName])) {
+            unset(self::$evtMap[$evtName]);
         }
     }
 
-    public function once($evtName, callable $callback) {
-        return $this->bind($evtName, $callback, Event::ONCE_EVENT);
-    }
-
-    public function bind($evtName, callable $callback, $evtType = Event::NORMAL_EVENT) {
-        $this->register($evtName);
-        $this->evtMap[$evtName][] = [
+    public static function once($evtName, $callback) {
+        self::register($evtName);
+        self::$evtMap[$evtName][] = [
             'callback' => $callback,
-            'evtType'  => $evtType,
+            'evtType'  => Event::ONCE_EVENT,
         ];
-        return TRUE;
     }
 
-    public function unbind($evtName, callable $callback) {
-        if (!isset($this->evtMap[$evtName]) || !$this->evtMap[$evtName]) {
+    public static function bind($evtName, $callback) {
+        self::register($evtName);
+        self::$evtMap[$evtName][] = [
+            'callback' => $callback,
+            'evtType'  => Event::NORMAL_EVENT,
+        ];
+    }
+
+    public static function unbind($evtName, $callback) {
+        if (!isset(self::$evtMap[$evtName]) || !self::$evtMap[$evtName]) {
             return FALSE;
         }
-        foreach ($this->evtMap[$evtName] as $key => $evt) {
+        foreach (self::$evtMap[$evtName] as $key => $evt) {
             $cb = $evt['callback'];
             if ($cb == $callback) {
-                unset($this->evtMap[$evtName][$key]);
+                unset(self::$evtMap[$evtName][$key]);
                 return TRUE;
             }
         }
         return FALSE;
     }
 
-    public function fire($evtName, $args = NULL, $loop = TRUE) {
-        if (isset($this->evtMap[$evtName]) && $this->evtMap[$evtName]) {
-            $this->fireEvents($evtName, $args, $loop);
+    public static function fire($evtName, $args = NULL, $loop = TRUE) {
+        if (isset(self::$evtMap[$evtName]) && self::$evtMap[$evtName]) {
+            self::fireEvents($evtName, $args, $loop);
         }
-        $this->evtChain->fireEventChain($evtName);
+        EventChain::fireEventChain($evtName);
     }
 
-    private function fireEvents($evtName, $args = NULL, $loop = TRUE) {
-        foreach ($this->evtMap[$evtName] as $key => $evt) {
+    private static function fireEvents($evtName, $args = NULL, $loop = TRUE) {
+        foreach (self::$evtMap[$evtName] as $key => $evt) {
             $callback = $evt['callback'];
-            $evtType = $evt['evtType'];
+            $evtType  = $evt['evtType'];
             call_user_func($callback, $args);
             if (Event::ONCE_EVENT === $evtType) {
-                unset($this->evtMap[$evtName][$key]);
+                unset(self::$evtMap[$evtName][$key]);
             }
             if (FALSE === $loop) {
                 break;

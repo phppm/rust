@@ -15,9 +15,7 @@
  *    limitations under the License.
  */
 namespace rust\dbo;
-use rust\common\Config;
 use rust\exception\storage\SQLTableException;
-use rust\Path;
 use rust\Rust;
 use rust\util\design\Singleton;
 
@@ -27,7 +25,7 @@ class Table {
 
     public function getDatabase($tableName) {
         if (!isset($this->tables[$tableName])) {
-            $this->setTables();
+            $this->init();
             if (!isset($this->tables[$tableName])) {
                 throw new SQLTableException('无法获取数' . $tableName . '表所在的数据库配置');
             }
@@ -36,39 +34,24 @@ class Table {
     }
 
     public function init() {
-        $this->setTables();
+        $this->initTables();
     }
 
-    private function setTables() {
+    private function initTables() {
         if ([] == $this->tables) {
             $config = Rust::getConfig();
-            $tables = NULL;
-            if ($config instanceof Config) {
-            }
-            $tables = $config->loadFromFiles(Path::getTablePath());
+            $tables = $config->get('tables');
             if (NULL == $tables || [] == $tables) {
                 return;
             }
-            foreach ($tables as $table) {
-                if (NULL == $table || [] == $table) {
-                    continue;
-                }
-                $parseTable = $this->parseTable($table);
-                if ([] != $parseTable) {
-                    $this->tables = array_merge($this->tables, $parseTable);
+            $result = [];
+            foreach ($tables as $db => $tableList) {
+                foreach ($tableList as $tableName) {
+                    $result[$tableName] = $db;
                 }
             }
+            $this->tables = $result;
         }
         return;
-    }
-
-    private function parseTable($table) {
-        $result = [];
-        foreach ($table as $db => $tableList) {
-            foreach ($tableList as $tableName) {
-                $result[$tableName] = $db;
-            }
-        }
-        return $result;
     }
 }

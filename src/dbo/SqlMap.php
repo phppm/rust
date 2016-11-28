@@ -51,7 +51,9 @@ class SqlMap {
         if (!$sql_map) {
             throw new SqlMapCanNotFindException('no suck sql map');
         }
-        $sql_map = (new SqlParser())->setSqlMap($sql_map)->parse()->getSqlMap();
+        $sidInfo = explode('.', $sid);
+        $key     = array_pop($sidInfo);
+        $sql_map = (new SqlParser())->setSqlMap($sql_map)->parse($key)->getSqlMap();
         return $sql_map;
     }
 }

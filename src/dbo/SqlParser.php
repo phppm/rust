@@ -27,28 +27,27 @@ class SqlParser {
         return $this;
     }
 
-    public function parse() {
-        foreach ($this->sqlMap as $key => $map) {
-            if ($key == 'table') {
-                continue;
-            }
-            $expKey = explode('_', $key);
-            if (!isset($expKey[0])) {
-                unset($this->sqlMap[$map]);
-                continue;
-            }
-            $map['sql']     = trim($map['sql']);
-            $map['require'] = isset($map['require']) ? $map['require'] : [];
-            $map['limit']   = isset($map['limit']) ? $map['limit'] : [];
-            $map['rw']      = 'w';
-            if (preg_match('/^\s*select/i', $map['sql'])) {
-                $map[$key]['rw'] = 'r';
-            }
-            $map['result_type'] = $this->checkResultType(strtolower($expKey[0]));
-            $map['table']       = $this->getTable($map);
-            $map['sql_type']    = $this->getSqlType($map['sql']);
-            $this->sqlMap[$key] = $map;
+    public function parse($key) {
+        $map = $this->sqlMap;
+        if ($key == 'table') {
+            return $this;
         }
+        $expKey = explode('_', $key);
+        if (!isset($expKey[0])) {
+            unset($this->sqlMap[$map]);
+            return $this;
+        }
+        $map['sql']     = trim($map['sql']);
+        $map['require'] = isset($map['require']) ?? [];
+        $map['limit']   = isset($map['limit']) ?? [];
+        $map['rw']      = 'w';
+        if (preg_match('/^\s*select/i', $map['sql'])) {
+            $map[$key]['rw'] = 'r';
+        }
+        $map['result_type'] = $this->checkResultType(strtolower($expKey[0]));
+        $map['table']       = $this->getTable($map);
+        $map['sql_type']    = $this->getSqlType($map['sql']);
+        $this->sqlMap       = $map;
         return $this;
     }
 

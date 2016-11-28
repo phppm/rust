@@ -10,7 +10,6 @@ use rust\fso\Dir;
 class Path {
     const DEFAULT_CONFIG_PATH     = 'resource/config/';
     const DEFAULT_TABLE_PATH      = 'resource/config/share/table/';
-    const DEFAULT_SQL_PATH        = 'resource/sql/';
     const DEFAULT_LOG_PATH        = 'resource/logs/';
     const DEFAULT_CACHE_PATH      = 'resource/cache/';
     const DEFAULT_MODEL_PATH      = 'resource/model/';
@@ -18,7 +17,6 @@ class Path {
     const DEFAULT_MIDDLEWARE_PATH = 'resource/middleware';
     private static $rootPath       = NULL;
     private static $configPath     = NULL;
-    private static $sqlPath        = NULL;
     private static $logPath        = NULL;
     private static $cachePath      = NULL;
     private static $modelPath      = NULL;
@@ -30,7 +28,6 @@ class Path {
         self::setRootPath($rootPath);
         //
         self::$configPath     = self::$rootPath . self::DEFAULT_CONFIG_PATH;
-        self::$sqlPath        = self::$rootPath . self::DEFAULT_SQL_PATH;
         self::$logPath        = self::$rootPath . self::DEFAULT_LOG_PATH;
         self::$modelPath      = self::$rootPath . self::DEFAULT_MODEL_PATH;
         self::$cachePath      = self::$rootPath . self::DEFAULT_CACHE_PATH;
@@ -49,10 +46,6 @@ class Path {
 
     public static function setConfigPath($configPath) {
         self::$configPath = $configPath;
-    }
-
-    public static function getSqlPath() {
-        return self::$sqlPath;
     }
 
     public static function getLogPath() {
