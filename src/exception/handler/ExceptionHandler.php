@@ -5,14 +5,11 @@
  * @author Filipe Dobreira <http://github.com/filp>
  */
 namespace rust\exception\handler;
-use rust\exception\BaseException;
 use rust\exception\Formatter;
 use rust\exception\Inspector;
 use rust\http\Response;
-use rust\Rust;
 use rust\util\Log;
 use rust\util\Result;
-use rust\web\WebApplication;
 
 /**
  * a Exception Handler.
@@ -52,24 +49,6 @@ class ExceptionHandler {
             // ErrorExceptions wrap the php-error types within the "severity" property
             ////$code = Misc::translateErrorCode($inspector->getException()->getSeverity());
         }
-        $app    = Rust::getApp();
-        $format = NULL;
-        if ($app instanceof WebApplication) {
-            $request = $app->getRequest();
-            $format  = $request->getFormat();
-        }
-        $response = new Response();
-        if ('json' === $format) {
-            if ($exception instanceof BaseException) {
-                $exception_result = $exception->toResult();
-            } else {
-                $exception_result = new Result($exception->getCode(), $exception->getMessage(), NULL);
-            }
-            $response->header('Content-Type', 'application/json');
-            $response->write(json_encode($exception_result, JSON_UNESCAPED_UNICODE));
-            $response->send();
-            return ExceptionHandler::QUIT;
-        }
         // List of variables that will be passed to the layout template.
         $vars         = [
             "title"           => 'Whoops! There was an error.',
@@ -93,22 +72,6 @@ class ExceptionHandler {
         ];
         $result->data = $vars;
         Log::write($result, 'error');
-        //
-        /*
-        $view = new View($app_config, $request);
-        $view->setPath($view_path);
-        $view->assign($vars);
-        $response->write($view->render('exception/whoops'));
-        $response->send();
-        */
-        // Add extra entries list of data tables:
-        // @todo: Consolidate addDataTable and addDataTableCallback
-        /*
-        $extraTables = array_map(function ($table) {
-            return $table instanceof \Closure ? $table() : $table;
-        }, $this->getDataTables());
-        */
-        //$vars["tables"] = array_merge($extraTables, $vars["tables"]);
         return ExceptionHandler::QUIT;
     }
 

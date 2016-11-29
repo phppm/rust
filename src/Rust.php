@@ -19,9 +19,14 @@ final Class Rust {
      */
     private static $app;
 
-    public static function init() {
-        $capture_exception = new Capture();
-        $capture_exception->pushHandler(new ExceptionHandler());
+    /**
+     * @param null|ExceptionHandler $exceptionHandler
+     */
+    public static function init($exceptionHandlerName = NULL) {
+        $capture_exception    = new Capture();
+        $exceptionHandlerName = $exceptionHandlerName??'\\rust\exception\\handler\\ExceptionHandler';
+        $exceptionHandler     = new $exceptionHandlerName();
+        $capture_exception->pushHandler($exceptionHandler);
         $capture_exception->register();
     }
 
@@ -40,8 +45,8 @@ final Class Rust {
             return $instance;
         }
         static::$config = $config;
-        $namespace = '\\' . str_replace('.', '\\', $name);
-        $instance  = new $namespace($name, $base_path, $config);
+        $namespace      = '\\' . str_replace('.', '\\', $name);
+        $instance       = new $namespace($name, $base_path, $config);
         if ($instance instanceof Application) {
             static::$app = $instance;
             return $instance;

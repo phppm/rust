@@ -286,6 +286,13 @@ class WebRequest implements RequestInterface {
     }
 
     /**
+     * @return mixed
+     */
+    public function getRequestTimeMS() {
+        return $this->requestTimeMS;
+    }
+
+    /**
      * 获取路由信息
      *
      * @return mixed

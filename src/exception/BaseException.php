@@ -1,8 +1,5 @@
 <?php
 namespace rust\exception;
-
-use rust\util\Result;
-
 class BaseException extends \Exception {
     protected $data;
 
@@ -28,10 +25,12 @@ class BaseException extends \Exception {
     }
 
     /**
-     * @return Result
+     * @param string $resultClass
+     *
+     * @return mixed
      */
-    final public function toResult() {
-        $result = new Result($this->getCode(), $this->getMessage(), $this->getData());
+    final public function toResult($resultClass = '\\rust\\util\\Result') {
+        $result = new $resultClass($this->getCode(), $this->getMessage(), $this->getData());
         return $result;
     }
 

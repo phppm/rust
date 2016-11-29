@@ -1,6 +1,6 @@
 <?php
 namespace rust\util;
-final class Result {
+ class Result {
     public $code;
     public $msg;
     public $data;
