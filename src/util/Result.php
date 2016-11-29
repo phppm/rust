@@ -1,19 +1,22 @@
 <?php
 namespace rust\util;
- class Result {
+class Result {
     public $code;
     public $msg;
     public $data;
+    public $isRefreshToken = FALSE;
+    public $token          = NULL;
 
     /**
      * Result constructor.
+     *
      * @param int                          $code
      * @param null|string|array            $msg
      * @param null|string|int|array|object $data
      */
     public function __construct($code, $msg = NULL, $data = NULL) {
         $this->code = $code;
-        $message = $msg;
+        $message    = $msg;
         if ((!$msg || is_array($msg)) && is_numeric($code) && $code) {
             $err_msg = $this->getErrorMsg($code);
             $message = is_array($msg) ? vsprintf($err_msg, $msg) : $err_msg;
@@ -26,7 +29,7 @@ namespace rust\util;
         if ($json) {
             $data = json_decode($json);
         }
-        $this->msg = $message;
+        $this->msg  = $message;
         $this->data = $data;
     }
 
@@ -34,6 +37,7 @@ namespace rust\util;
      * 获取错误消息
      *
      * @param $err_code
+     *
      * @return int|null|Config|string
      */
     protected function getErrorMsg($err_code) {
