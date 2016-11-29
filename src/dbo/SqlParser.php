@@ -70,7 +70,6 @@ class SqlParser {
      */
     private function checkResultType($mapKey) {
         switch ($mapKey) {
-        case 'create' :
         case 'insert' :
             $resultType = ISqlResultType::LAST_INSERT_ID;
             break;
@@ -91,9 +90,6 @@ class SqlParser {
             break;
         case 'count' :
             $resultType = ISqlResultType::COUNT;
-            break;
-        case 'raw' :
-            $resultType = ISqlResultType::RAW;
             break;
         default :
             $resultType = ISqlResultType::RAW;
