@@ -4,8 +4,8 @@ class Result {
     public $code;
     public $msg;
     public $data;
-    public $isRefreshToken = FALSE;
-    public $token          = NULL;
+    public $needRefreshToken = NULL;
+    public $authoriazeToken  = NULL;
 
     /**
      * Result constructor.
@@ -21,16 +21,16 @@ class Result {
             $err_msg = $this->getErrorMsg($code);
             $message = is_array($msg) ? vsprintf($err_msg, $msg) : $err_msg;
         }
-        $data = !$data && !is_numeric($data) ? NULL : $data;
-        $json = NULL;
-        if (is_array($data) || is_object($data)) {
-            $json = json_encode($data, JSON_UNESCAPED_UNICODE);
-        }
-        if ($json) {
-            $data = json_decode($json);
-        }
+        //传入的结果非数组或者对象 则返回['result'=>xxx]对象
+        $data       = !$data && !is_object($data) && !is_resource($data) ? NULL : $data;
         $this->msg  = $message;
         $this->data = $data;
+        if (!$this->authoriazeToken) {
+            unset($this->authoriazeToken);
+        }
+        if (!$this->needRefreshToken) {
+            unset($this->needRefreshToken);
+        }
     }
 
     /**

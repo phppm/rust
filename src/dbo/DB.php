@@ -6,7 +6,10 @@
  */
 namespace rust\dbo;
 use rust\common\Config;
+use rust\exception\storage\DBOExecuteException;
+use rust\exception\SystemException;
 use rust\Rust;
+use rust\util\Log;
 
 /**
  * DB
@@ -41,7 +44,12 @@ class DB {
             //TODO:抛出异常
             return NULL;
         }
-        $dboResult = $connection->getDBO($conn_key)->execute($sqlMap);
+        try {
+            $dboResult = $connection->getDBO($conn_key)->execute($sqlMap);
+        } catch (DBOExecuteException $e) {
+            Log::write($e->getData(), 'error');
+            throw new SystemException('系统出错了');
+        }
         $formatter = new ResultFormatter($dboResult, $sqlMap['result_type']);
         return $formatter->format();
     }

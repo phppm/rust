@@ -1,7 +1,6 @@
 <?php
 namespace rust\exception;
-
-use \Exception;
+use Exception;
 
 /**
  * Class RustException
@@ -9,14 +8,14 @@ use \Exception;
  * @package rust\exception
  */
 class RustException extends Exception {
-    protected $_data = [];
+    private $_data = NULL;
 
     /**
      * 构造
      *
-     * @param int $code 异常代码
-     * @param string $msg 异常消息
-     * @param array $data 跟踪数据
+     * @param int    $code 异常代码
+     * @param string $msg  异常消息
+     * @param array  $data 跟踪数据
      */
     public function __construct($code, $msg = NULL, $data = NULL) {
         parent::__construct($msg, $code);
