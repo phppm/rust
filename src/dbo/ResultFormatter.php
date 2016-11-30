@@ -27,13 +27,13 @@ class ResultFormatter {
     public function format() {
         switch ($this->resultType) {
         case IResultType::INSERT :
-            $result = $this->insert();
+            $result = $this->lastInsertId();
             break;
         case IResultType::UPDATE :
-            $result = $this->update();
+            $result = $this->affectedRows();
             break;
         case IResultType::DELETE :
-            $result = $this->delete();
+            $result = $this->affectedRows();
             break;
         case IResultType::BATCH :
             $result = $this->batch();
@@ -72,20 +72,8 @@ class ResultFormatter {
         yield !isset($rows[0]['count_sql_rows']) ? 0 : (int)$rows[0]['count_sql_rows'];
     }
 
-    private function insert() {
-        return $this->dbResult->getStatement();
-    }
-
     private function lastInsertId() {
         return $this->dbResult->getLastInsertId();
-    }
-
-    private function update() {
-        return $this->dbResult->getStatement();
-    }
-
-    private function delete() {
-        return $this->dbResult->getStatement();
     }
 
     private function affectedRows() {
