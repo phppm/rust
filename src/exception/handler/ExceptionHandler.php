@@ -5,6 +5,7 @@
  * @author Filipe Dobreira <http://github.com/filp>
  */
 namespace rust\exception\handler;
+use rust\common\Config;
 use rust\exception\Formatter;
 use rust\exception\Inspector;
 use rust\http\Response;
@@ -31,6 +32,14 @@ class ExceptionHandler {
      * @var \Throwable $exception
      */
     private $exception;
+    /**
+     * @var Config
+     */
+    private $config;
+
+    public function __construct(Config $config = NULL) {
+        $this->config = $config;
+    }
 
     /**
      * @param Result $result
@@ -94,6 +103,15 @@ class ExceptionHandler {
      */
     public function setException($exception) {
         $this->exception = $exception;
+    }
+
+    /**
+     * 获取错误配置
+     *
+     * @return Config
+     */
+    protected function getConfig() {
+        return $this->config;
     }
 
     /**

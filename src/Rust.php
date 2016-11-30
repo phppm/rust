@@ -1,7 +1,7 @@
 <?php
 namespace rust;
+use rust\common\Config;
 use rust\exception\handler\Capture;
-use rust\exception\handler\ExceptionHandler;
 use rust\util\Registry;
 
 /**
@@ -20,12 +20,13 @@ final Class Rust {
     private static $app;
 
     /**
-     * @param null|ExceptionHandler $exceptionHandler
+     * @param null        $exceptionHandlerName
+     * @param null|Config $errConfig
      */
-    public static function init($exceptionHandlerName = NULL) {
+    public static function init($exceptionHandlerName = NULL, Config $errConfig = NULL) {
         $capture_exception    = new Capture();
         $exceptionHandlerName = $exceptionHandlerName??'\\rust\exception\\handler\\ExceptionHandler';
-        $exceptionHandler     = new $exceptionHandlerName();
+        $exceptionHandler     = new $exceptionHandlerName($errConfig);
         $capture_exception->pushHandler($exceptionHandler);
         $capture_exception->register();
     }
