@@ -25,12 +25,6 @@ class Result {
         $data       = !$data && !is_object($data) && !is_resource($data) ? NULL : $data;
         $this->msg  = $message;
         $this->data = $data;
-        if (!$this->authorizedToken) {
-            unset($this->authorizedToken);
-        }
-        if (!$this->needRefreshToken) {
-            unset($this->needRefreshToken);
-        }
     }
 
     /**
