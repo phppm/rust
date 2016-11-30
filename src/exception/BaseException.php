@@ -1,6 +1,8 @@
 <?php
 namespace rust\exception;
-class BaseException extends \Exception {
+use Exception;
+
+class BaseException extends Exception {
     private $data;
 
     /**

@@ -5,7 +5,7 @@ class Result {
     public $msg;
     public $data;
     public $needRefreshToken = NULL;
-    public $authoriazeToken  = NULL;
+    public $authorizedToken  = NULL;
 
     /**
      * Result constructor.
@@ -25,8 +25,8 @@ class Result {
         $data       = !$data && !is_object($data) && !is_resource($data) ? NULL : $data;
         $this->msg  = $message;
         $this->data = $data;
-        if (!$this->authoriazeToken) {
-            unset($this->authoriazeToken);
+        if (!$this->authorizedToken) {
+            unset($this->authorizedToken);
         }
         if (!$this->needRefreshToken) {
             unset($this->needRefreshToken);

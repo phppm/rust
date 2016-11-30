@@ -38,14 +38,15 @@ class WebRequest implements RequestInterface {
      */
     public function initRequestByServerEnv() {
         //init request time
-        $this->requestTime   = getenv('REQUEST_TIME');
-        $this->requestTimeMS = getenv('REQUEST_TIME_FLOAT');
+        $this->requestTime   = $_SERVER['REQUEST_TIME']??NULL;
+        $this->requestTimeMS = $_SERVER['REQUEST_TIME_FLOAT']??NULL;
+        $this->requestTimeMS = $this->requestTimeMS ? $this->requestTimeMS * 10000 : NULL;
         //init ip
-        $this->remoteAddress = getenv('REMOTE_ADDR');
+        $this->remoteAddress = $_SERVER['REMOTE_ADDR']??NULL;
         //----------
-        $protocol = getenv('SERVER_PROTOCOL');
+        $protocol = $_SERVER['SERVER_PROTOCOL']??'';
         $version  = $protocol ? str_replace('HTTP/', '', $protocol) : '1.1';
-        $method   = getenv('REQUEST_METHOD');
+        $method   = $_SERVER['REQUEST_METHOD']??'GET';
         $method   = $method ? $method : 'GET';
         $uri      = $this->initUriByServerEnv();
         //get headers
@@ -93,7 +94,7 @@ class WebRequest implements RequestInterface {
      */
     protected function initUriByServerEnv() {
         $uri       = new Uri('');
-        $env_https = getenv('HTTPS');
+        $env_https = $_SERVER['HTTPS']??'';
         if ($env_https) {
             $uri = $uri->withScheme($env_https == 'on' ? 'https' : 'http');
         }
@@ -275,14 +276,14 @@ class WebRequest implements RequestInterface {
     /**
      * @param null $format
      *
-     * @return false|string
+     * @return int|string
      */
     public function getRequestTime($format = NULL) {
-        $time = $this->requestTime;
+        $result = intval($this->requestTime);
         if (!empty($format)) {
-            $time = date($format, $time);
+            $result = date($format, $result);
         }
-        return $time;
+        return $result;
     }
 
     /**
