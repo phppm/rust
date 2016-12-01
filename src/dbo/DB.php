@@ -25,7 +25,8 @@ class DB {
      * @param       $data
      * @param array $options
      *
-     * @return int|null|Statement|string
+     * @return int|null|Statement
+     * @throws SystemException
      */
     public static function exec($sid, $data, $options = []) {
         $sqlMap   = SqlMap::getInstance()->getSql($sid, $data, $options);
