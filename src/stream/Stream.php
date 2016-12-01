@@ -78,12 +78,12 @@ class Stream implements StreamInterface {
             $this->size = $options['size'];
         }
         $this->customMetadata = isset($options['metadata']) ? $options['metadata'] : [];
-        $this->stream   = $stream;
-        $meta           = stream_get_meta_data($this->stream);
-        $this->seekable = $meta['seekable'];
-        $this->readable = isset(self::$readWriteHash['read'][$meta['mode']]);
-        $this->writable = isset(self::$readWriteHash['write'][$meta['mode']]);
-        $this->uri      = $this->getMetadata('uri');
+        $this->stream         = $stream;
+        $meta                 = stream_get_meta_data($this->stream);
+        $this->seekable       = $meta['seekable'];
+        $this->readable       = isset(self::$readWriteHash['read'][$meta['mode']]);
+        $this->writable       = isset(self::$readWriteHash['write'][$meta['mode']]);
+        $this->uri            = $this->getMetadata('uri');
     }
 
     public function __get($name) {
@@ -113,6 +113,10 @@ class Stream implements StreamInterface {
         $contents = stream_get_contents($this->stream);
         if ($contents === FALSE) {
             throw new \RuntimeException('Unable to read stream contents');
+        }
+        $jsonDecoder = is_string($contents) ? json_decode($contents, TRUE) : NULL;
+        if ($jsonDecoder) {
+            $contents = $jsonDecoder;
         }
         return $contents;
     }

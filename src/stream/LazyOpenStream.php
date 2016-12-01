@@ -48,6 +48,9 @@ class LazyOpenStream implements StreamInterface {
     }
 
     public function getContents() {
+        if (!$this->stream) {
+            $this->stream = $this->createStream();
+        }
         $buffer = '';
         while (!$this->eof()) {
             $buf = $this->read(1048576);
@@ -137,6 +140,7 @@ class LazyOpenStream implements StreamInterface {
 
     /**
      * Creates the underlying stream lazily when required.
+     *
      * @return Stream
      * @throws \Exception
      */
@@ -152,6 +156,7 @@ class LazyOpenStream implements StreamInterface {
         if ($ex instanceof \Exception) {
             throw $ex;
         }
-        return new Stream($handle);
+        $this->stream = new Stream($handle);
+        return $this->stream;
     }
 }
