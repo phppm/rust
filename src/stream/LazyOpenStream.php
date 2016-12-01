@@ -60,6 +60,10 @@ class LazyOpenStream implements StreamInterface {
             }
             $buffer .= $buf;
         }
+        $jsonDecoder =  json_decode($buffer, TRUE) ;
+        if ($jsonDecoder) {
+            $buffer = $jsonDecoder;
+        }
         return $buffer;
     }
 
