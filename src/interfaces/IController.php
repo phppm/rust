@@ -6,5 +6,5 @@ namespace rust\interfaces;
  * @package rust\interfaces
  */
 interface IController {
-    public function init();
+    public function getRequest();
 } // END interface IPKController

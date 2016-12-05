@@ -55,7 +55,7 @@ class LazyOpenStream implements StreamInterface {
         while (!$this->eof()) {
             $buf = $this->read(1048576);
             // Using a loose equality here to match on '' and false.
-            if ($buf == NULL) {
+            if (!$buf) {
                 break;
             }
             $buffer .= $buf;

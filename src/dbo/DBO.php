@@ -54,7 +54,10 @@ class DBO extends PDO {
                 $this->_statement = $this->prepare($sql);
                 $exec_result      = $this->_statement->execute();
                 if (isset($sqlMap['result_model']) && $sqlMap['result_model']) {
-                    $this->_statement->setFetchMode(\PDO::FETCH_CLASS, $sqlMap['result_model']);
+                    $this->_statement->setFetchMode(PDO::FETCH_CLASS, $sqlMap['result_model']);
+                } else {
+                    $this->_statement->setFetchMode(PDO::FETCH_CLASS,'stdClass');
+
                 }
                 //TODO:写入SQL日志
             } catch (PDOException $e) {

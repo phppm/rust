@@ -157,6 +157,10 @@ class WebRequest implements RequestInterface {
         return $new;
     }
 
+    public function getRemoteIP() {
+        return $this->remoteAddress;
+    }
+
     public function getRequestTarget() {
         if ($this->requestTarget !== NULL) {
             return $this->requestTarget;

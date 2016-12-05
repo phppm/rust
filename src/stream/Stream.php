@@ -111,6 +111,7 @@ class Stream implements StreamInterface {
 
     public function getContents() {
         $contents = stream_get_contents($this->stream);
+        var_dump($contents);
         if ($contents === FALSE) {
             throw new \RuntimeException('Unable to read stream contents');
         }
