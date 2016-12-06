@@ -29,6 +29,8 @@ class WebRequest implements RequestInterface {
     private $routedInfo;
     private $parameters;
     private $cookies;
+    private $parsedBody;
+    private $files;
 
     public function __construct() {
     }
@@ -139,6 +141,26 @@ class WebRequest implements RequestInterface {
     public function withCookies(array $cookies) {
         $new          = clone $this;
         $new->cookies = $cookies;
+        return $new;
+    }
+
+    public function getFiles() {
+        return $this->files;
+    }
+
+    public function withFiles($files) {
+        $new        = clone $this;
+        $new->files = $files;
+        return $new;
+    }
+
+    public function getParsedBody() {
+        return $this->parsedBody;
+    }
+
+    public function withParsedBody($data) {
+        $new             = clone $this;
+        $new->parsedBody = $data;
         return $new;
     }
 
