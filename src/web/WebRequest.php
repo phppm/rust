@@ -30,6 +30,7 @@ class WebRequest implements RequestInterface {
     private $parameters;
     private $cookies;
     private $parsedBody;
+    private $queryParameters;
     private $files;
 
     public function __construct() {
@@ -161,6 +162,16 @@ class WebRequest implements RequestInterface {
     public function withParsedBody($data) {
         $new             = clone $this;
         $new->parsedBody = $data;
+        return $new;
+    }
+
+    public function getQueryParameters() {
+        return $this->queryParameters;
+    }
+
+    public function withQueryParameters($data) {
+        $new                  = clone $this;
+        $new->queryParameters = $data;
         return $new;
     }
 
