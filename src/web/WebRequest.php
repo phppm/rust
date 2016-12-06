@@ -160,7 +160,12 @@ class WebRequest implements RequestInterface {
     }
 
     public function withParsedBody($data) {
-        $new             = clone $this;
+        $new = clone $this;
+        if (!$data) {
+            $data        = $new->getBody()->getContents();
+            $jsonDecoder = $data && is_string($data) ? json_decode($data, TRUE) : $data;
+            $data        = $jsonDecoder ? $jsonDecoder : $data;
+        }
         $new->parsedBody = $data;
         return $new;
     }
