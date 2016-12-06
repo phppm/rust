@@ -42,7 +42,7 @@ final class WebApplication extends Application {
         //实例化一个Request,用来获取请求
         $request = new WebRequest();
         $request->initRequestByServerEnv();
-        $this->request = $request;
+        $this->request = $request->withCookies($_COOKIE)->withParsedBody($_POST)->withQueryParameters($_GET)->withFiles($_FILES);
         return $this;
     }
 
@@ -50,6 +50,7 @@ final class WebApplication extends Application {
      * Run
      *
      * @return bool
+     * @throws Exception
      */
     public function run() {
         if (!$this->_run) {
