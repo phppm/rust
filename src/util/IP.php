@@ -1,7 +1,11 @@
 <?php
 namespace rust\util;
-
-class IP {
+/**
+ * Class IP
+ *
+ * @package rust\util
+ */
+final class IP {
     /**
      * @param string $ip
      *
@@ -9,5 +13,17 @@ class IP {
      */
     public static function toLong($ip = '') {
         return sprintf('%u', ip2long($ip));
+    }
+
+    /**
+     * @param int $ip_long
+     *
+     * @return null|string
+     */
+    public static function toString($ip_long) {
+        if (!$ip_long) {
+            return NULL;
+        }
+        return long2ip($ip_long);
     }
 }

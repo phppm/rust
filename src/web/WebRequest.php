@@ -151,7 +151,7 @@ class WebRequest implements RequestInterface {
 
     public function withFiles($files) {
         $new        = clone $this;
-        $new->files = $files && is_array($files) ? $this->normalizeFiles($files) : $files;
+        $new->files = $files;
         return $new;
     }
 
