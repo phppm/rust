@@ -4,6 +4,7 @@ use rust\exception\storage\SQLBuilderException;
 
 /**
  * Class SqlBuilder
+ *
  * @package rust\dbo
  */
 class SqlBuilder {
@@ -25,6 +26,7 @@ class SqlBuilder {
             break;
         case 'insert' :
             $this->insert($data);
+            $this->parseInsertUpdateData($data);
             break;
         case 'update' :
             $this->update($data);
@@ -56,7 +58,9 @@ class SqlBuilder {
 
     /**
      * 处理监听
+     *
      * @param $data
+     *
      * @return $this
      */
     private function parseBinds($data) {
@@ -70,10 +74,10 @@ class SqlBuilder {
             }
             return $this;
         }
-        $patterns = array_map(function ($name) {
+        $patterns            = array_map(function ($name) {
             return '#' . str_replace(':', '\\:', $name) . '#';
         }, array_keys($binds));
-        $values = array_map(function ($value) {
+        $values              = array_map(function ($value) {
             $value = Validator::realEscape($value);
             return is_int($value) ? $value : "'" . $value . "'";
         }, array_values($binds));
@@ -85,7 +89,7 @@ class SqlBuilder {
         if (!$data || !isset($data['count']) || '' == $data['count']) {
             throw new SQLBuilderException('what field do you want count?');
         }
-        $count = 'count(' . $data['count'] . ') as count_sql_rows';
+        $count               = 'count(' . $data['count'] . ') as count_sql_rows';
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'count', $count);
         return $this;
     }
@@ -100,14 +104,15 @@ class SqlBuilder {
             return $this;
         }
         $columns = [];
-        $values = [];
+        $values  = [];
         foreach ($insert as $column => $value) {
             $columns[] = $this->formatColumn($column);
-            $values[] = $this->formatValue($value);
+            $values[]  = $this->formatValue($value);
         }
         $replace = '(' . implode(',', $columns) . ') values(';
         $replace .= implode(',', $values) . ')';
-        $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'insert', $replace);
+        $sql=$this->replaceSqlLabel($this->sqlMap['sql'], 'insert', $replace);
+        $this->sqlMap['sql'] = $sql;
         return $this;
     }
 
@@ -118,8 +123,8 @@ class SqlBuilder {
             return $this;
         }
         $insertsArr = [];
-        $cloumns = array_keys($inserts[0]);
-        $replace = '(' . implode(',', $cloumns) . ') values ';
+        $cloumns    = array_keys($inserts[0]);
+        $replace    = '(' . implode(',', $cloumns) . ') values ';
         foreach ($inserts as $insert) {
             $values = [];
             foreach ($insert as $value) {
@@ -172,11 +177,11 @@ class SqlBuilder {
         if (!isset($data['where']) && !isset($data['and']) && !isset($data['or'])) {
             return TRUE;
         }
-        $where = isset($data['where']) ? $data['where'] : [];
-        $where = isset($data['and']) ? array_merge($where, $data['and']) : $where;
-        $where = isset($data['or']) ? array_merge($where, $data['or']) : $where;
+        $where      = isset($data['where']) ? $data['where'] : [];
+        $where      = isset($data['and']) ? array_merge($where, $data['and']) : $where;
+        $where      = isset($data['or']) ? array_merge($where, $data['or']) : $where;
         $requireMap = [];
-        $limitMap = [];
+        $limitMap   = [];
         if (is_array($this->sqlMap['require']) && [] != $this->sqlMap['require']) {
             $requireMap = array_flip($this->sqlMap['require']);
         }
@@ -211,8 +216,40 @@ class SqlBuilder {
         } else {
             $column = $data['column'];
         }
-        $column = is_array($column) ? implode(',', $column) : $column;
+        $column              = is_array($column) ? implode(',', $column) : $column;
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'column', $column);
+        return $this;
+    }
+
+    private function parseInsertUpdateData($data) {
+        if (!$data || !isset($data['data']) || [] == $data['data']) {
+            $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', '');
+            return $this;
+        }
+        $update = $data['data'];
+        if (!isset($update[0])) {$tmp = [];
+            foreach ($update as $column => $value) {
+                $tmp[] = [$column, $value];
+            }
+            $update = $tmp;
+        }
+        if (count($update) == 0) {
+            $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', '');
+            return $this;
+        }
+        $clauses = [];
+        foreach ($update as $row) {
+            $expr = FALSE;
+            if (isset($row[2]) && '' != $row[2]) {
+                $expr = $row[2];
+            }
+            list($column, $value) = $row;
+//            $columns = $this->formatColumn($column);
+            $clause = ' ' . $column.'=VALUES('.$column.')';
+            $clauses[] = $clause;
+        }
+        $replace             = implode(',', $clauses);
+        $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', $replace);
         return $this;
     }
 
@@ -244,7 +281,7 @@ class SqlBuilder {
             $clause .= FALSE === $expr ? " = '" . $value . "'" : " = " . $expr . " ";
             $clauses[] = $clause;
         }
-        $replace = implode(',', $clauses);
+        $replace             = implode(',', $clauses);
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', $replace);
         return $this;
     }
@@ -253,13 +290,13 @@ class SqlBuilder {
         if (!$data || !isset($data['var']) || [] == $data['var']) {
             return $this;
         }
-        $vars = $data['var'];
+        $vars        = $data['var'];
         $firstLabels = [];
-        $secLabels = [];
-        $replaces = [];
+        $secLabels   = [];
+        $replaces    = [];
         foreach ($vars as $key => $value) {
             $firstLabels[] = '#' . strtoupper($key) . '#';
-            $secLabels[] = '#{' . strtolower($key) . '}';
+            $secLabels[]   = '#{' . strtolower($key) . '}';
             if (is_array($value)) {
                 $replaces[] = '(' . implode(',', array_map([$this, 'formatValue'], $value)) . ')';
             } else {
@@ -294,7 +331,7 @@ class SqlBuilder {
             }
             list($column, $condition, $value) = $row;
             $condition = strtolower(trim($condition));
-            $column = trim($column);
+            $column    = trim($column);
             if ('like' === $condition && '%%%' === trim($value)) {
                 throw new SQLBuilderException('sql like can not contain %%%');
             }
@@ -317,7 +354,7 @@ class SqlBuilder {
             throw new SQLBuilderException('sql where条件中in为空');
         }
         $clause = $this->formatColumn($column) . ' ' . $condition . ' (';
-        $tmp = [];
+        $tmp    = [];
         foreach ($value as $v) {
             $tmp[] = $this->formatValue($v);
         }
@@ -342,7 +379,7 @@ class SqlBuilder {
             $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'and', '');
             return $this;
         }
-        $replace = $this->parseWhereStyleData($andData, 'and');
+        $replace             = $this->parseWhereStyleData($andData, 'and');
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], $andLabel, $replace);
         return $this;
     }
@@ -353,7 +390,7 @@ class SqlBuilder {
             $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'or', '');
             return $this;
         }
-        $replace = $this->parseWhereStyleData($or, 'or');
+        $replace             = $this->parseWhereStyleData($or, 'or');
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'or', trim($replace, ' or'));
         return $this;
     }
@@ -407,9 +444,9 @@ class SqlBuilder {
     }
 
     private function formatSql() {
-        $sql = trim($this->sqlMap['sql']);
-        $sql = str_replace("\n", NULL, $sql);
-        $sql = str_replace("\r", NULL, $sql);
+        $sql                 = trim($this->sqlMap['sql']);
+        $sql                 = str_replace("\n", NULL, $sql);
+        $sql                 = str_replace("\r", NULL, $sql);
         $this->sqlMap['sql'] = $sql;
         return $this;
     }
