@@ -16,14 +16,14 @@ class Result {
      */
     public function __construct($code, $msg = NULL, $data = NULL) {
         $this->code = $code;
-        $message    = $msg;
+        $message = $msg;
         if ((!$msg || is_array($msg)) && is_numeric($code) && $code) {
             $err_msg = $this->getErrorMsg($code);
             $message = is_array($msg) ? vsprintf($err_msg, $msg) : $err_msg;
         }
         //传入的结果非数组或者对象 则返回['result'=>xxx]对象
-        $data       = !$data && !is_object($data) && !is_resource($data) ? NULL : $data;
-        $this->msg  = $message;
+        $data = !$data && !is_object($data) && !is_resource($data) && !is_array($data) ? NULL : $data;
+        $this->msg = $message;
         $this->data = $data;
     }
 
