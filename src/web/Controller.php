@@ -5,6 +5,7 @@
  * @author rustysun.cn@gmail.com
  */
 namespace rust\web;
+
 use rust\common\Config;
 use rust\http\URL;
 use rust\interfaces\IController;
@@ -46,11 +47,11 @@ abstract class Controller implements IController {
      * @param WebResponse $response
      * @param Config      $config
      */
-    final public function __construct(WebRequest $request, WebResponse &$response, Config $config) {
-        $this->_config   = $config;
-        $this->_request  = $request;
+    final public function __construct(WebRequest $request = NULL, WebResponse &$response = NULL, Config $config = NULL) {
+        $this->_config = $config;
+        $this->_request = $request;
         $this->_response = $response;
-        $this->_view     = new View($request->getUri());
+        $this->_view = $request ? new View($request->getUri()) : NULL;
         //写入公共环境变量
         $this->env('http_request', $request);
     }
@@ -60,7 +61,7 @@ abstract class Controller implements IController {
      * @return bool
      */
     public function init() {
-        $base_uri               = $this->_config->get('route.base_uri');
+        $base_uri = $this->_config->get('route.base_uri');
         $this->_env['base_url'] = $base_uri;
         return TRUE;
     }
