@@ -5,12 +5,12 @@
  * @author Filipe Dobreira <http://github.com/filp>
  */
 namespace rust\exception\handler;
+
 use rust\common\Config;
 use rust\exception\Formatter;
 use rust\exception\Inspector;
 use rust\http\Response;
 use rust\util\Log;
-use rust\util\Result;
 
 /**
  * a Exception Handler.
@@ -23,7 +23,7 @@ class ExceptionHandler {
     const DONE = 0x10; // returning this is optional, only exists for
     // semantic purposes
     const LAST_HANDLER = 0x20;
-    const QUIT         = 0x30;
+    const QUIT = 0x30;
     /**
      * @var Inspector $inspector
      */
@@ -42,24 +42,15 @@ class ExceptionHandler {
     }
 
     /**
-     * @param Result $result
-     *
      * @return int
      */
-    public function handle($result = NULL) {
-        if (php_sapi_name() === 'cli') {
-            return ExceptionHandler::DONE;
-        }
+    public function handle() {
         $inspector = $this->getInspector();
-        $frames    = $inspector->getFrames();
+        $frames = $inspector->getFrames();
         $exception = $inspector->getException();
-        $code      = $exception->getCode();
-        if ($exception instanceof \ErrorException) {
-            // ErrorExceptions wrap the php-error types within the "severity" property
-            ////$code = Misc::translateErrorCode($inspector->getException()->getSeverity());
-        }
+        $code = $exception->getCode();
         // List of variables that will be passed to the layout template.
-        $vars         = [
+        $vars = [
             "title"           => 'Whoops! There was an error.',
             "name"            => explode("\\", $inspector->getExceptionName()),
             "message"         => $inspector->getException()->getMessage(),
@@ -70,6 +61,7 @@ class ExceptionHandler {
             "handler"         => $this,
             "handlers"        => $inspector->getHandlers(),
             "tables"          => [
+                "INPUT DATA"            => file_get_contents('php://input'),
                 "GET Data"              => $_GET,
                 "POST Data"             => $_POST,
                 "Files"                 => $_FILES,
@@ -79,8 +71,8 @@ class ExceptionHandler {
                 "Environment Variables" => $_ENV,
             ],
         ];
-        $result->data = $vars;
-        Log::write($result, 'error');
+        //TODO:进一步优化
+        Log::write($vars, 'error');
         return ExceptionHandler::QUIT;
     }
 

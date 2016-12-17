@@ -15,22 +15,25 @@
  *    limitations under the License.
  */
 namespace rust\fso;
+
 use rust\exception\InvalidArgumentException;
 use rust\util\Arr;
 
 class Dir {
     const SCAN_CURRENT_DIR = 'current';
-    const SCAN_BFS         = 'bfs';
-    const SCAN_DFS         = 'dfs';
+    const SCAN_BFS = 'bfs';
+    const SCAN_DFS = 'dfs';
+    const SCAN_EXCLUDE_DIR = 'exclude';
+    private static $excludeDirs = [];
 
-    public static function glob($path, $pattern = NULL, $strategy = self::SCAN_DFS) {
+    public static function glob($path, $pattern = NULL, $strategy = Dir::SCAN_DFS) {
         if (!is_dir($path) || !$pattern) {
             throw new InvalidArgumentException('invalid $path or $pattern for Dir::glob');
         }
         $files = Dir::scan($path, $strategy);
         $result = [];
         foreach ($files as $file) {
-            if (FALSE === self::matchPattern($pattern, $file)) {
+            if (FALSE === static::matchPattern($pattern, $file)) {
                 continue;
             }
             $result[] = $file;
@@ -38,19 +41,19 @@ class Dir {
         return $result;
     }
 
-    public static function scan($path, $strategy = self::SCAN_CURRENT_DIR, $excludeDir = TRUE) {
+    public static function scan($path, $strategy = Dir::SCAN_CURRENT_DIR, $excludeDir = TRUE) {
         if (!is_dir($path)) {
             throw new InvalidArgumentException('invalid $path for Dir::scan');
         }
         switch ($strategy) {
-        case self::SCAN_CURRENT_DIR:
-            $files = self::scanCurrentDir($path, $excludeDir);
+        case static::SCAN_CURRENT_DIR:
+            $files = static::scanCurrentDir($path, $excludeDir);
             break;
-        case self::SCAN_BFS:
-            $files = self::scanBfs($path, $excludeDir);;
+        case static::SCAN_BFS:
+            $files = static::scanBfs($path, $excludeDir);
             break;
-        case self::SCAN_DFS:
-            $files = self::scanDfs($path, $excludeDir);
+        case static::SCAN_DFS:
+            $files = static::scanDfs($path, $excludeDir);
             break;
         default:
             throw new InvalidArgumentException('invalid $strategy for Dir::glob');
@@ -91,8 +94,21 @@ class Dir {
         return $ret;
     }
 
+    /**
+     * @param array $dirs
+     */
+    public static function setExcludeDirs(array $dirs) {
+        static::$excludeDirs = $dirs;
+    }
+
     private static function scanCurrentDir($path, $excludeDir = TRUE) {
-        $path = self::formatPath($path);
+        $path = static::formatPath($path);
+        if (static::$excludeDirs) {
+            $find = in_array($path, static::$excludeDirs);
+            if ($find) {
+                return [];
+            }
+        }
         $dh = opendir($path);
         if (!$dh) {
             return [];
@@ -122,7 +138,7 @@ class Dir {
             $file = $queue->dequeue();
             $fileType = filetype($file);
             if ('dir' == $fileType) {
-                $subFiles = self::scanCurrentDir($file, FALSE);
+                $subFiles = static::scanCurrentDir($file, FALSE);
                 foreach ($subFiles as $subFile) {
                     $queue->enqueue($subFile);
                 }
@@ -139,11 +155,11 @@ class Dir {
 
     private static function scanDfs($path, $excludeDir = TRUE) {
         $files = [];
-        $subFiles = self::scanCurrentDir($path, FALSE);
+        $subFiles = static::scanCurrentDir($path, FALSE);
         foreach ($subFiles as $subFile) {
             $fileType = filetype($subFile);
             if ('dir' == $fileType) {
-                $innerFiles = self::scanDfs($subFile, $excludeDir);
+                $innerFiles = static::scanDfs($subFile, $excludeDir);
                 $files = Arr::join($files, $innerFiles);
                 if (FALSE === $excludeDir) {
                     $files[] = $subFile;
