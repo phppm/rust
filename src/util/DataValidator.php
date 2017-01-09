@@ -60,19 +60,19 @@ final class DataValidator {
                 return '只能输入字母、数字及符号,如(~!@#$...等)';
             },
             'length'       => function ($min = NULL, $max = NULL) {
-                if ($min != NULL && $max != NULL) {
+                if ($min !== NULL && $max !== NULL) {
                     return '只能输入' . $min . '至' . $max . '个字符';
                 }
-                if ($min != NULL) {
+                if ($min !== NULL) {
                     return '至少输入' . $min . '个字符';
                 }
                 return '最多只能输入' . $max . '个字符';
             },
             'range'        => function ($min = NULL, $max = NULL) {
-                if ($min != NULL && $max != NULL) {
+                if ($min !== NULL && $max !== NULL) {
                     return '%s不能少于' . $min . '且不能超过' . $max;
                 }
-                if ($min != NULL) {
+                if ($min !== NULL) {
                     return '%s不能少于' . $min;
                 }
                 return '%s不能超过' . $max;
@@ -118,10 +118,10 @@ final class DataValidator {
             },
             'length'       => function ($value, $min_len = NULL, $max_len = NULL) {
                 $v_len = strlen($value);
-                if ($min_len != NULL && $v_len < $min_len) {
+                if ($min_len !== NULL && $v_len < $min_len) {
                     return FALSE;
                 }
-                if ($max_len != NULL && $v_len > $max_len) {
+                if ($max_len !== NULL && $v_len > $max_len) {
                     return FALSE;
                 }
                 return TRUE;
@@ -139,10 +139,10 @@ final class DataValidator {
                 return TRUE;
             },
             'range'        => function ($value, $max = NULL, $min = NULL) {
-                if ($min != NULL && $value < $min) {
+                if ($min !== NULL && $value < $min) {
                     return FALSE;
                 }
-                if ($max != NULL && $value > $max) {
+                if ($max !== NULL && $value > $max) {
                     return FALSE;
                 }
                 return TRUE;
