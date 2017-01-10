@@ -9,10 +9,11 @@ class CustomException extends RustException {
     /**
      * BaseException constructor.
      *
-     * @param int      $code
-     * @param null|int $sub_error_code
+     * @param int                   $main_code
+     * @param null|int|string|array $sub_error_code
+     * @param null|array            $data
      */
-    public function __construct($code, $sub_error_code = NULL) {
-        parent::__construct($code, $sub_error_code);
+    public function __construct($code, $sub_error_code = NULL, $data = NULL) {
+        parent::__construct($code, $sub_error_code, $data);
     }
 }
