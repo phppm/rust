@@ -30,7 +30,7 @@ class Inspector {
     /**
      * @param \Throwable $exception The exception to inspect
      */
-    public function __construct($exception, $handlers) {
+    public function __construct($exception, $handlers=[]) {
         $this->exception = $exception;
         $this->handlers = $handlers;
     }
