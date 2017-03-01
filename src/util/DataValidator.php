@@ -3,10 +3,10 @@ namespace rust\util;
 //数据验证
 final class DataValidator {
     const LOWER_CASE_LETTERS = 1;
-    const CAPITAL_LETTERS    = 2;
-    const LETTERS            = 3;
-    const LETTERS_INTEGER    = 4;
-    const CHARACTERS         = 5;
+    const CAPITAL_LETTERS = 2;
+    const LETTERS = 3;
+    const LETTERS_INTEGER = 4;
+    const CHARACTERS = 5;
     private static $_initialized = FALSE;
     private static $_rules, $_msg;
 
@@ -15,6 +15,7 @@ final class DataValidator {
      *
      * @param string $value
      * @param string $pattern
+     *
      * @return bool
      */
     public static function isMatched($value, $pattern) {
@@ -43,7 +44,7 @@ final class DataValidator {
             'datetime'     => '请输入正确的日期或时间,如2016-5-20 05:02:00, 2016-5-20, 05:02:00',
             'same'         => '请确认输入的%s是否一致',
             'email-mobile' => '只能输入邮箱或手机号',
-            'chars'        => function ($type) {
+            'chars'        => function($type) {
                 if (DataValidator::LOWER_CASE_LETTERS === $type) {
                     return '请输入小写字母';
                 }
@@ -59,20 +60,20 @@ final class DataValidator {
                 }
                 return '只能输入字母、数字及符号,如(~!@#$...等)';
             },
-            'length'       => function ($min = NULL, $max = NULL) {
-                if ($min !== NULL && $max !== NULL) {
+            'length'       => function($min = NULL, $max = NULL) {
+                if ($min != NULL && $max != NULL) {
                     return '只能输入' . $min . '至' . $max . '个字符';
                 }
-                if ($min !== NULL) {
+                if ($min != NULL) {
                     return '至少输入' . $min . '个字符';
                 }
                 return '最多只能输入' . $max . '个字符';
             },
-            'range'        => function ($min = NULL, $max = NULL) {
-                if ($min !== NULL && $max !== NULL) {
+            'range'        => function($min = NULL, $max = NULL) {
+                if ($min != NULL && $max != NULL) {
                     return '%s不能少于' . $min . '且不能超过' . $max;
                 }
-                if ($min !== NULL) {
+                if ($min != NULL) {
                     return '%s不能少于' . $min;
                 }
                 return '%s不能超过' . $max;
@@ -85,7 +86,7 @@ final class DataValidator {
             'mobile'       => '/^1[34578]{1}\d{9}$/',
             'number'       => '/^[\-\+]?\d*\.?\d*$/',
             'integer'      => '/^\d+$/',
-            'chars'        => function ($value, $type) {
+            'chars'        => function($value, $type) {
                 $pattern = '/^[a-zA-Z\d\~\!\@\#\$\%\&\*\(\)\-\_\:\?]+$/';
                 if (DataValidator::LOWER_CASE_LETTERS === $type) {
                     $pattern = '/^[a-z]+$/';
@@ -104,7 +105,7 @@ final class DataValidator {
                 }
                 return DataValidator::isMatched($value, $pattern);
             },
-            'required'     => function ($value) {
+            'required'     => function($value) {
                 if (is_array($value) && !$value) {
                     return FALSE;
                 }
@@ -116,38 +117,38 @@ final class DataValidator {
                 }
                 return TRUE;
             },
-            'length'       => function ($value, $min_len = NULL, $max_len = NULL) {
+            'length'       => function($value, $min_len = NULL, $max_len = NULL) {
                 $v_len = strlen($value);
-                if ($min_len !== NULL && $v_len < $min_len) {
+                if ($min_len != NULL && $v_len < $min_len) {
                     return FALSE;
                 }
-                if ($max_len !== NULL && $v_len > $max_len) {
+                if ($max_len != NULL && $v_len > $max_len) {
                     return FALSE;
                 }
                 return TRUE;
             },
-            'datetime'     => function ($value, $format = 'Y-m-d H:i:s') {
+            'datetime'     => function($value, $format = 'Y-m-d H:i:s') {
                 if (date($format, strtotime($value)) != $value) {
                     return FALSE;
                 }
                 return TRUE;
             },
-            'same'         => function ($value, $value2) {
+            'same'         => function($value, $value2) {
                 if ($value != $value2) {
                     return FALSE;
                 }
                 return TRUE;
             },
-            'range'        => function ($value, $max = NULL, $min = NULL) {
-                if ($min !== NULL && $value < $min) {
+            'range'        => function($value, $min = NULL, $max = NULL) {
+                if ($min != NULL && $value < $min) {
                     return FALSE;
                 }
-                if ($max !== NULL && $value > $max) {
+                if ($max != NULL && $value > $max) {
                     return FALSE;
                 }
                 return TRUE;
             },
-            'email-mobile' => function ($value) {
+            'email-mobile' => function($value) {
                 $email_rule = DataValidator::getRule('email');
                 $is_email = DataValidator::isMatched($value, $email_rule);
                 if ($is_email) {
@@ -168,6 +169,7 @@ final class DataValidator {
      * get validate rule
      *
      * @param string $rule_name
+     *
      * @return null
      */
     public static function getRule($rule_name) {
@@ -192,19 +194,20 @@ final class DataValidator {
         foreach ($validate_rules as $element_name => $rules) {
             $rule_msg = isset($rules['msg']) ? $rules['msg'] : [];
             unset($rules['msg']);
-            $is_required = in_array('required', $rules) ? TRUE : FALSE;
+            $rules = static::arrangeRules($rules);
+            $is_required = isset($rules['required']) ? TRUE : FALSE;
             if (!isset($elements[$element_name]) || !$rules || !is_array($rules)) {
                 $rule_names = is_array($rules) ? array_keys($rules) : [];
                 $rule_name = $rule_names ? array_shift($rule_names) : NULL;
                 $paras = $rule_name ? $rules[$rule_name] : []; //['H:i:s']
-                $validate_msg = self::valueValidate(NULL, $rule_name, $paras, $is_required);
+                $validate_msg = static::valueValidate(NULL, $rule_name, $paras, $is_required);
                 if ($validate_msg) {
                     $result[$element_name] = vsprintf($validate_msg, $rule_msg);
                 }
                 continue;
             }
             foreach ($rules as $rule_name => $paras) {
-                $validate_msg = self::valueValidate(trim($elements[$element_name]), $rule_name, $paras, $is_required);
+                $validate_msg = static::valueValidate(trim($elements[$element_name]), $rule_name, $paras, $is_required);
                 if ($validate_msg) {
                     $result[$element_name] = vsprintf($validate_msg, $rule_msg);
                 }
@@ -220,21 +223,16 @@ final class DataValidator {
      * @param string $rule_name
      * @param array  $paras
      * @param bool   $is_required 是否必填
+     *
      * @return bool|mixed|null|string
      */
-    protected static function valueValidate($value, $rule_name, $paras, $is_required = FALSE) {
+    private static function valueValidate($value, $rule_name, $paras, $is_required = FALSE) {
         $rule_paras = $paras;
-        if ($is_required && NULL === $value) {
-            return FALSE;
-        } elseif (!$is_required) {//可选参数且value为NULL
-            return NULL;
-        }
-        if (is_numeric($rule_name)) {
-            $rule_name = $paras;
-            $paras = NULL;
-            $rule_paras = [];
+        if (NULL === $value) {
+            return $is_required ? static::getInvalidateMsg($rule_name, $paras) : NULL;
         }
         if (!isset(self::$_rules[$rule_name])) {
+            //TODO:抛出检测规则异常
             return FALSE;
         }
         if (is_array($rule_paras)) {
@@ -242,22 +240,60 @@ final class DataValidator {
         } else {
             $rule_paras = [$value, $rule_paras];
         }
+        echo "\n", $rule_name, print_r($rule_paras, TRUE);
+        $valid_ok = static::getValidateResult($value, $rule_name, $rule_paras);
+        if ($valid_ok) {
+            return NULL;
+        }
+        $msg = isset(self::$_msg[$rule_name]) ? self::$_msg[$rule_name] : '';
+        return is_callable($msg) ? call_user_func_array($msg, $paras) : $msg;
+    }
+
+    /**
+     * @param array $rules
+     *
+     * @return array
+     */
+    private static function arrangeRules(array $rules) {
+        $result = [];
+        foreach ($rules as $name => $rule) {
+            if (is_numeric($name)) {
+                $result[$rule] = '';
+            } else {
+                $result[$name] = $rule;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @param string $rule_name
+     * @param array  $paras
+     *
+     * @return mixed|string
+     */
+    private static function getInvalidateMsg($rule_name, $paras) {
+        $fn = isset(self::$_msg[$rule_name]) ? self::$_msg[$rule_name] : '';
+        return is_callable($fn) ? call_user_func_array($fn, $paras) : $fn;
+    }
+
+    /**
+     * @param mixed  $value
+     * @param string $rule_name
+     * @param array  $rule_paras
+     *
+     * @return bool|mixed|null
+     */
+    private static function getValidateResult($value, $rule_name, $rule_paras) {
         $valid_result = NULL;
         $rule = self::$_rules[$rule_name];
         if (is_callable($rule)) {
-            $valid_result = call_user_func_array($rule, $rule_paras);
-        } else {
-            if (is_string($rule)) {
-                $valid_result = DataValidator::isMatched($value, $rule);
-            }
+            return call_user_func_array($rule, $rule_paras);
         }
-        if (!$valid_result) {
-            $msg = isset(self::$_msg[$rule_name]) ? self::$_msg[$rule_name] : '';
-            if (is_callable($msg)) {
-                $msg = call_user_func_array($msg, $paras);
-            }
-            return $msg;
+        if (is_string($rule)) {
+            return DataValidator::isMatched($value, $rule);
         }
         return NULL;
     }
 }
+
