@@ -240,7 +240,6 @@ final class DataValidator {
         } else {
             $rule_paras = [$value, $rule_paras];
         }
-        echo "\n", $rule_name, print_r($rule_paras, TRUE);
         $valid_ok = static::getValidateResult($value, $rule_name, $rule_paras);
         if ($valid_ok) {
             return NULL;
