@@ -1,5 +1,6 @@
 <?php
 namespace rust\dbo;
+
 use PDO;
 use PDOException;
 use rust\exception\storage\DBOExecuteException;
@@ -23,11 +24,12 @@ class DBO extends PDO {
     public function __construct($dsn, $username, $password, $options = []) {
         $options = $options && is_array($options) ? $options : [];
         $options += [
-            PDO::ATTR_STATEMENT_CLASS => [
+            PDO::ATTR_STATEMENT_CLASS    => [
                 '\\rust\\dbo\\Statement',
                 [$this],
             ],
-            PDO::ATTR_ERRMODE         => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
         ];
         parent::__construct($dsn, $username, $password, $options);
     }
@@ -48,16 +50,15 @@ class DBO extends PDO {
             }
         } else {
             $exec_result = NULL;
-            $stmt        = NULL;
+            $stmt = NULL;
             try {
-                $sql              = $sqlMap['sql'];
+                $sql = $sqlMap['sql'];
                 $this->_statement = $this->prepare($sql);
-                $exec_result      = $this->_statement->execute();
+                $exec_result = $this->_statement->execute();
                 if (isset($sqlMap['result_model']) && $sqlMap['result_model']) {
                     $this->_statement->setFetchMode(PDO::FETCH_CLASS, $sqlMap['result_model']);
                 } else {
-                    $this->_statement->setFetchMode(PDO::FETCH_CLASS,'stdClass');
-
+                    $this->_statement->setFetchMode(PDO::FETCH_CLASS, 'stdClass');
                 }
                 //TODO:写入SQL日志
             } catch (PDOException $e) {
@@ -65,8 +66,8 @@ class DBO extends PDO {
             }
             if (!$exec_result) {
                 $err_info = $this->_statement->errorInfo();
-                $msg      = array_pop($err_info);
-                $data     = [
+                $msg = array_pop($err_info);
+                $data = [
                     'driver_code'    => isset($err_info[1]) ? $err_info[1] : NULL,
                     'sql'            => $sqlMap,
                     'sql_state_code' => isset($err_info[0]) ? $err_info[0] : NULL,
