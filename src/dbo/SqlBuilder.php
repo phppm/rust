@@ -171,7 +171,7 @@ class SqlBuilder {
 
     private function formatValue($value) {
         $value = Validator::realEscape($value);
-        return is_int($value) ? $value : "'" . $value . "'";
+        return is_numeric($value) ? $value : "'" . $value . "'";
     }
 
     private function checkRequire($data) {
@@ -297,8 +297,8 @@ class SqlBuilder {
         $secLabels = [];
         $replaces = [];
         foreach ($vars as $key => $value) {
-            $firstLabels[] = '#' . strtoupper($key) . '#';
-            $secLabels[] = '#{' . strtolower($key) . '}';
+            $firstLabels[] = '#' . $key . '#';
+            $secLabels[] = '#{' . $key . '}';
             if (is_array($value)) {
                 $replaces[] = '(' . implode(',', array_map([$this, 'formatValue'], $value)) . ')';
             } else {
