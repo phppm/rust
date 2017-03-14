@@ -1,5 +1,6 @@
 <?php
 namespace rust\web;
+
 use rust\fso\FileSystemObject;
 use rust\http\URL;
 use rust\interfaces\IView;
@@ -47,7 +48,7 @@ final class View implements IView {
      * @param string|array $name
      * @param              $value
      */
-    public function assign($name, $value = NULL) {
+    public function assign($name, $value = NULL): Void {
         if ('view' !== $name) { //protected 'view' variable.
             if (is_array($name) && $name) {
                 unset($name['view']);
@@ -72,7 +73,7 @@ final class View implements IView {
      * @param null $val
      */
     public function beginBlock($block_name, $val = NULL) {
-        $block_name      = strtoupper($block_name);
+        $block_name = strtoupper($block_name);
         $this->_curBlock = $block_name;
         if (NULL !== $val) {
             $this->_data['blocks'][$this->_curBlock] = $val;
@@ -115,16 +116,16 @@ final class View implements IView {
             //TODO:
             //return FALSE;
         }
-        $content                                   = Buffer::getAndClean();
+        $content = Buffer::getAndClean();
         $this->_data['layouts'][$this->_curLayout] = trim($content);
-        $this->_curLayout                          = NULL;
+        $this->_curLayout = NULL;
     }
 
     /**
      * @param $view
      */
     public function load($view) {
-        $view = str_replace('\\','/',$view);
+        $view = str_replace('\\', '/', $view);
         $viewFile = $view . $this->_suffix;
         $viewFile = $this->_getCompiler()->compile($viewFile);
         $this->_renderFile($viewFile);
@@ -190,7 +191,7 @@ final class View implements IView {
      */
     public function url($path = '', $params = [], $site = '') {
         if (is_string($params)) {
-            $site   = $params;
+            $site = $params;
             $params = [];
         }
         URL::setDomain($this->_uri->getHost(), $this->_uri->getMainDomain());
@@ -270,7 +271,7 @@ final class View implements IView {
      */
     private function _getCompiler() {
         if (!$this->_compiler) {
-            $fso             = new FileSystemObject();
+            $fso = new FileSystemObject();
             $this->_compiler = new Compiler($fso, Path::getCachePath(), $this->_path);
         }
         return $this->_compiler;

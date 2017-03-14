@@ -12,6 +12,11 @@ final Class ErrorCode {
     const NEED_PARAMETER = 1002;
     const METHOD_NOT_FOUND = 1003;
     const DBO_EXECUTE_FAILED = 2000;
+    //---mvc
+    //controller
+    //model
+    //view
+    const NOT_FOUND_VIEW_INSTANCE = 3801;
     //缓存异常
     const CACHE_SERVER_NOT_FOUND = 6000;
     const CACHE_SERVER_CONNECT_FAILED = 6001;

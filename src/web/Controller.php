@@ -7,6 +7,7 @@
 namespace rust\web;
 
 use rust\common\Config;
+use rust\exception\view\ViewInstanceNotFoundException;
 use rust\http\URL;
 use rust\interfaces\IController;
 
@@ -51,7 +52,7 @@ abstract class Controller implements IController {
         $this->_config = $config;
         $this->_request = $request;
         $this->_response = $response;
-        $this->_view = $request ? new View($request->getUri()) : NULL;
+        $this->_view = NULL;
         //写入公共环境变量
         $this->env('http_request', $request);
     }
@@ -97,6 +98,9 @@ abstract class Controller implements IController {
      * @param null $value
      */
     final public function assign($name, $value = NULL) {
+        if (!$this->_view) {
+            throw new ViewInstanceNotFoundException();
+        }
         return $this->_view->assign($name, $value);
     }
 
@@ -113,6 +117,9 @@ abstract class Controller implements IController {
      * 视图结束
      */
     final public function end() {
+        if (!$this->_view) {
+            throw new ViewInstanceNotFoundException();
+        }
         $this->_view->end();
     }
 
@@ -122,6 +129,9 @@ abstract class Controller implements IController {
      * @return mixed
      */
     final public function render($tpl) {
+        if (!$this->_view) {
+            throw new ViewInstanceNotFoundException();
+        }
         //强制将环境变量 作为common数据 赋给模板
         $this->assign('common', $this->_env);
         return $this->_view->render($tpl);
@@ -158,6 +168,13 @@ abstract class Controller implements IController {
     }
 
     /**
+     * @param View $view
+     */
+    final public function setView(View $view) {
+        $this->_view = $view;
+    }
+
+    /**
      * 页面转向
      *
      * @param string $path   跳转路径
@@ -166,15 +183,6 @@ abstract class Controller implements IController {
     final public function redirect($path, $params = []) {
         $url = URL::create($path, $params);
         $this->_response->redirect($url);
-    }
-
-    /**
-     * 设置视图路径
-     *
-     * @param $path
-     */
-    final public function setViewPath($path) {
-        $this->_view->setPath($path);
     }
 
     /**
