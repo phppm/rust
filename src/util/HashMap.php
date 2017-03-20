@@ -5,7 +5,7 @@ namespace rust\util;
  *
  * @package rust\util
  */
-Class HashMap {
+final Class HashMap {
     /**
      * @var array $hashTable
      */
