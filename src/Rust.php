@@ -5,8 +5,6 @@ use rust\common\Config;
 use rust\exception\handler\Capture;
 use rust\util\Registry;
 
-defined('RUST_FAILED') or define('RUST_FAILED', 0);
-
 /**
  * Class Rust
  *

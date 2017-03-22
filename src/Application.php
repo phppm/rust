@@ -1,7 +1,10 @@
 <?php
 namespace rust;
+
 use rust\interfaces\IApplication;
 use rust\interfaces\IConfig;
+
+defined('RUST_FAILED') or define('RUST_FAILED', 0);
 
 /**
  * Class Application
