@@ -1,8 +1,11 @@
 <?php
 namespace rust;
+
 use rust\common\Config;
 use rust\exception\handler\Capture;
 use rust\util\Registry;
+
+defined('RUST_FAILED') or define('RUST_FAILED', 0);
 
 /**
  * Class Rust
@@ -24,9 +27,9 @@ final Class Rust {
      * @param null|Config $errConfig
      */
     public static function init($exceptionHandlerName = NULL, Config $errConfig = NULL) {
-        $capture_exception    = new Capture();
+        $capture_exception = new Capture();
         $exceptionHandlerName = $exceptionHandlerName??'\\rust\exception\\handler\\ExceptionHandler';
-        $exceptionHandler     = new $exceptionHandlerName($errConfig);
+        $exceptionHandler = new $exceptionHandlerName($errConfig);
         $capture_exception->pushHandler($exceptionHandler);
         $capture_exception->register();
     }
@@ -46,8 +49,8 @@ final Class Rust {
             return $instance;
         }
         static::$config = $config;
-        $namespace      = '\\' . str_replace('.', '\\', $name);
-        $instance       = new $namespace($name, $base_path, $config);
+        $namespace = '\\' . str_replace('.', '\\', $name);
+        $instance = new $namespace($name, $base_path, $config);
         if ($instance instanceof Application) {
             static::$app = $instance;
             return $instance;
