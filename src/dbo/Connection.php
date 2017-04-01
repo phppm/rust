@@ -4,9 +4,11 @@
  *
  * @author rustysun.cn@gmail.com
  */
+
 namespace rust\dbo;
 
 use rust\dbo\exception\DBOConnectionException;
+use rust\dbo\exception\DBReadConfigException;
 use rust\util\Config;
 
 /**
@@ -69,7 +71,7 @@ class Connection {
      *
      * @return array
      */
-    protected function getConnectConfig($name = null): array {
+    protected function getConnectConfig($name = null) {
         //初始化
         $result = [
             'user' => static::$db_config->get('username'),
@@ -87,23 +89,23 @@ class Connection {
      * connections or read/write or master/slave
      * TODO:轮询\加权轮询
      *
-     * @param null $name
-     * @param      $driver
-     * @param      $database
+     * @param $name
+     * @param $driver
+     * @param $database
+     * @param $result
      *
-     * @return mixed
-     * @throws RustException
+     * @throws DBReadConfigException
      */
-    protected function getMultiConnectionDSN($name, $driver, $database, &$result): array {
+    protected function getMultiConnectionDSN($name, $driver, $database, &$result) {
         if (!$name) {
-            throw new DBOParameterException();
+            throw new DBReadConfigException('not found "name" parameter');
         }
         //db.connections
         $connections = self::$db_config->get('connections', true);
         if ($connections && !isset($connections[$name])) {
             $name = self::$db_config->get('default');
             if (!$name) {
-                throw new RustException(1007);
+                throw new DBReadConfigException('not found "default" parameter');
             }
         }
         if ($connections && isset($connections[$name]) && $connections[$name] && is_array($connections[$name])) {
@@ -112,7 +114,7 @@ class Connection {
             $database = isset($config['database']) ? $config['database'] : $database;
             $host = isset($config['host']) ? $config['host'] : '';
             if (!$driver || !$database || !$host) {
-                throw new RustException(1008);
+                throw new DBReadConfigException('not found "driver","database" or "host" parameter.');
             }
             $result['dsn'] = vsprintf('%s:host=%s;dbname=%s', [$driver, $host, $database]);
             $result['user'] = $config['username'];
@@ -125,7 +127,7 @@ class Connection {
             $driver = isset($config['driver']) ? $config['driver'] : $driver;
             $database = isset($config['database']) ? $config['database'] : $database;
             if (!$driver || !$database || !$host) {
-                throw new RustException(1009);
+                throw new DBReadConfigException('not found "driver","database" or "host" parameter!');
             }
             $result['dsn'] = vsprintf('%s:host=%s;dbname=%s', [
                 $driver,

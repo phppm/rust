@@ -13,9 +13,10 @@ class DBReadConfigException extends DBOException {
     /**
      * DBReadConfigException constructor.
      *
-     * @param array $data
+     * @param string $msg
      */
-    public function __construct($data = []) {
-        parent::__construct(ErrorCode::DBO_CONFIG_READ_FAILED, 'not found database config', $data);
+    public function __construct($msg = '') {
+        $msg = $msg ? $msg : 'not found database config';
+        parent::__construct(ErrorCode::DBO_CONFIG_READ_FAILED, $msg, []);
     }
 }
