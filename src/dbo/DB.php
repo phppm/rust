@@ -52,10 +52,12 @@ class DB {
      * @param array  $options
      *
      * @return Statement
+     * @throws DBException
      */
     public static function execQuery(string $sid, array $data, $options = []): Statement {
         $result = static::exec($sid, $data, $options);
         if (null === $result || !$result instanceof Statement) {
+            throw new DBException('数据库执行出错了');
         }
         return $result;
     }
@@ -66,10 +68,12 @@ class DB {
      * @param array  $options
      *
      * @return int
+     * @throws DBException
      */
     public static function execUpdate(string $sid, array $data, array $options = []): int {
         $result = static::exec($sid, $data, $options);
         if (null === $result || !is_int($result)) {
+            throw new DBException('数据库执行出错了');
         }
         return $result;
     }
