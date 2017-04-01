@@ -13,10 +13,10 @@ class ResultFormatter {
     /**
      * ResultFormatterInterface constructor.
      *
-     * @param DBOResult $result
+     * @param SQLExecuteResult $result
      * @param int       $resultType
      */
-    public function __construct(DBOResult $result, $resultType = IResultType::RAW) {
+    public function __construct(SQLExecuteResult $result, $resultType = IResultType::RAW) {
         $this->dbResult   = $result;
         $this->resultType = $resultType;
     }

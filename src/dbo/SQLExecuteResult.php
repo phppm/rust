@@ -1,24 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: rustysun
- */
+
 namespace rust\dbo;
 /**
- * Class DBOResult
+ * Class SQLExecuteResult
  *
  * @package rust\dbo
  */
-class DBOResult {
+class SQLExecuteResult {
     /**
-     * @var DBO
+     * @var DBO $dbo
      */
     private $dbo;
 
     /**
-     * FutureResult constructor.
+     * DBExecResult constructor.
      *
-     * @param DriverInterface $driver
+     * @param DBO $dbo
      */
     public function __construct(DBO &$dbo) {
         $this->dbo = $dbo;
@@ -27,21 +24,21 @@ class DBOResult {
     /**
      * @return int
      */
-    public function getLastInsertId() {
+    public function getLastInsertId(): int {
         return $this->dbo->getLastInsertId();
     }
 
     /**
      * @return int
      */
-    public function getAffectedRows() {
+    public function getAffectedRows(): int {
         return $this->dbo->getAffectedRows();
     }
 
     /**
      * @return Statement
      */
-    public function getStatement() {
+    public function getStatement(): Statement {
         return $this->dbo->getStatement();
     }
 }

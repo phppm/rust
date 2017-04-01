@@ -1,9 +1,10 @@
 <?php
+
 namespace rust\dbo;
 
 use PDO;
 use PDOException;
-use rust\exception\storage\DBOExecuteException;
+use rust\dbo\exception\SQLExecuteException;
 
 /**
  * DBO extends PDO
@@ -11,7 +12,7 @@ use rust\exception\storage\DBOExecuteException;
 class DBO extends PDO {
     private $_lastInsertId;
     private $_affectedRows;
-    private $_statement = NULL;
+    private $_statement = null;
 
     /**
      * DBO constructor.
@@ -39,8 +40,8 @@ class DBO extends PDO {
      *
      * @param  array $sqlMap
      *
-     * @return DBOResult
-     * @throws DBOExecuteException
+     * @return SQLExecuteResult
+     * @throws SQLExecuteException
      */
     public function execute($sqlMap) {
         if ('w' === $sqlMap['rw']) {
@@ -49,8 +50,8 @@ class DBO extends PDO {
                 $this->_lastInsertId = $this->lastInsertId();
             }
         } else {
-            $exec_result = NULL;
-            $stmt = NULL;
+            $exec_result = null;
+            $stmt = null;
             try {
                 $sql = $sqlMap['sql'];
                 $this->_statement = $this->prepare($sql);
@@ -68,25 +69,25 @@ class DBO extends PDO {
                 $err_info = $this->_statement->errorInfo();
                 $msg = array_pop($err_info);
                 $data = [
-                    'driver_code'    => isset($err_info[1]) ? $err_info[1] : NULL,
+                    'driver_code'    => isset($err_info[1]) ? $err_info[1] : null,
                     'sql'            => $sqlMap,
-                    'sql_state_code' => isset($err_info[0]) ? $err_info[0] : NULL,
+                    'sql_state_code' => isset($err_info[0]) ? $err_info[0] : null,
                 ];
-                throw new DBOExecuteException($msg, $data);
+                throw new SQLExecuteException($msg, $data);
             }
         }
-        return new DBOResult($this);
+        return new SQLExecuteResult($this);
     }
 
-    public function getLastInsertId() {
+    public function getLastInsertId(): int {
         return $this->_lastInsertId;
     }
 
-    public function getAffectedRows() {
+    public function getAffectedRows(): int {
         return $this->_affectedRows;
     }
 
-    public function getStatement() {
+    public function getStatement(): Statement {
         return $this->_statement;
     }
 }

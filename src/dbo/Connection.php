@@ -5,7 +5,8 @@
  * @author rustysun.cn@gmail.com
  */
 namespace rust\dbo;
-use rust\exception\RustException;
+
+use rust\dbo\exception\DBOConnectionException;
 use rust\util\Config;
 
 /**
@@ -14,16 +15,18 @@ use rust\util\Config;
  * @package rust\dbo
  */
 class Connection {
-    const READ   = 'read';
-    const WRITE  = 'write';
+    const READ = 'read';
+    const WRITE = 'write';
     const MASTER = 'mater';
-    const SLAVE  = 'slave';
-    private static $_instance;
+    const SLAVE = 'slave';
     /**
      * @var Config
      */
     protected static $db_config;
-    protected        $dbo = [];
+    /**
+     * @var array(new DBO) $dbo
+     */
+    protected $dbo = [];
 
     /**
      * get dbo instance
@@ -31,18 +34,19 @@ class Connection {
      * @param string $name
      *
      * @return DBO
+     * @throws DBOConnectionException
      */
-    public function getDBO($name) {
-        $config  = $this->getConnectConfig($name);
-        $dsn     = $config && isset($config['dsn']) ? $config['dsn'] : NULL;
-        $user    = $config && isset($config['user']) ? $config['user'] : NULL;
-        $pass    = $config && isset($config['pass']) ? $config['pass'] : NULL;
+    public function getDBO(string $name): DBO {
+        $config = $this->getConnectConfig($name);
+        $dsn = $config && isset($config['dsn']) ? $config['dsn'] : null;
+        $user = $config && isset($config['user']) ? $config['user'] : null;
+        $pass = $config && isset($config['pass']) ? $config['pass'] : null;
         $options = $config && isset($config['options']) ? $config['options'] : [];
         if (!$dsn || !$user) {
-            return NULL;
+            throw new DBOConnectionException('database connection config read failed!');
         }
         $hash = md5($dsn . $user . $pass);
-        $dbo  = isset($this->dbo[$hash]) && $this->dbo[$hash] ? $this->dbo[$hash] : NULL;
+        $dbo = isset($this->dbo[$hash]) && $this->dbo[$hash] ? $this->dbo[$hash] : null;
         if (!$dbo) {
             $this->dbo[$hash] = new DBO($dsn, $user, $pass, $options);
         }
@@ -64,15 +68,14 @@ class Connection {
      * @param $name
      *
      * @return array
-     * @throws RustException
      */
-    protected function getConnectConfig($name = NULL) {
+    protected function getConnectConfig($name = null): array {
         //初始化
-        $result   = [
+        $result = [
             'user' => static::$db_config->get('username'),
             'pass' => static::$db_config->get('password'),
         ];
-        $driver   = static::$db_config->get('driver');
+        $driver = static::$db_config->get('driver');
         $database = static::$db_config->get('database');
         if (static::$db_config->get('read') || static::$db_config->get('slave') || static::$db_config->get('connections')) {
             $this->getMultiConnectionDSN($name, $driver, $database, $result);
@@ -91,12 +94,12 @@ class Connection {
      * @return mixed
      * @throws RustException
      */
-    protected function getMultiConnectionDSN($name, $driver, $database, &$result) {
+    protected function getMultiConnectionDSN($name, $driver, $database, &$result): array {
         if (!$name) {
-            throw new RustException(1006);
+            throw new DBOParameterException();
         }
         //db.connections
-        $connections = self::$db_config->get('connections', TRUE);
+        $connections = self::$db_config->get('connections', true);
         if ($connections && !isset($connections[$name])) {
             $name = self::$db_config->get('default');
             if (!$name) {
@@ -104,22 +107,22 @@ class Connection {
             }
         }
         if ($connections && isset($connections[$name]) && $connections[$name] && is_array($connections[$name])) {
-            $config   = $connections[$name];
-            $driver   = isset($config['driver']) ? $config['driver'] : $driver;
+            $config = $connections[$name];
+            $driver = isset($config['driver']) ? $config['driver'] : $driver;
             $database = isset($config['database']) ? $config['database'] : $database;
-            $host     = isset($config['host']) ? $config['host'] : '';
+            $host = isset($config['host']) ? $config['host'] : '';
             if (!$driver || !$database || !$host) {
                 throw new RustException(1008);
             }
-            $result['dsn']  = vsprintf('%s:host=%s;dbname=%s', [$driver, $host, $database]);
+            $result['dsn'] = vsprintf('%s:host=%s;dbname=%s', [$driver, $host, $database]);
             $result['user'] = $config['username'];
             $result['pass'] = $config['password'];
             return;
         }
         //db.read db.write db.master db.slave
-        if ($config = self::$db_config->get($name, TRUE)) {
-            $host     = $this->getConnectionHost($config);
-            $driver   = isset($config['driver']) ? $config['driver'] : $driver;
+        if ($config = self::$db_config->get($name, true)) {
+            $host = $this->getConnectionHost($config);
+            $driver = isset($config['driver']) ? $config['driver'] : $driver;
             $database = isset($config['database']) ? $config['database'] : $database;
             if (!$driver || !$database || !$host) {
                 throw new RustException(1009);
@@ -139,7 +142,7 @@ class Connection {
      */
     protected function getSingleConnectionConfig(Config $config) {
         //unix socket
-        $is_unix_socket = $config->get('unix_socket') ? TRUE : FALSE;
+        $is_unix_socket = $config->get('unix_socket') ? true : false;
         if ($is_unix_socket) {
             return vsprintf('%s:unix_socket=%s;dbname=%s', [
                 $config->get('driver'),
@@ -160,15 +163,15 @@ class Connection {
      * @return null
      */
     protected function getConnectionHost($conn_config) {
-        $host = NULL;
+        $host = null;
         if (isset($conn_config[0]) && $conn_config[0]) {
             $host_index = array_rand($conn_config);
-            $host       = $conn_config[$host_index];
+            $host = $conn_config[$host_index];
         } else {
             if (isset($conn_config['host']) && is_array($conn_config['host'])) {
                 $config_hosts = $conn_config['host'];
-                $host_index   = array_rand($config_hosts);
-                $host         = count($config_hosts) > 1 ? $config_hosts[$host_index] : $config_hosts[0];
+                $host_index = array_rand($config_hosts);
+                $host = count($config_hosts) > 1 ? $config_hosts[$host_index] : $config_hosts[0];
             } else {
                 if (isset($conn_config['host'])) {
                     $host = $conn_config['host'];
@@ -187,7 +190,7 @@ class Connection {
      *
      * @return void
      */
-    protected function setModes(& $dbo, $modes, $is_strict = FALSE) {
+    protected function setModes(& $dbo, $modes, $is_strict = false) {
         $modes_config = $modes && is_array($modes) ? implode(',', $modes) : '';
         if ($modes_config) {
             $dbo->prepare(sprintf('set session sql_mode=\'%s\'', $modes))->execute();

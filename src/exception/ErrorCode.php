@@ -1,17 +1,22 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: rustysun
- * Date: 16/4/6
- * Time: 下午6:49
- */
-namespace rust\exception;
 
+namespace rust\exception;
+/**
+ * Class ErrorCode
+ *
+ * @package rust\exception
+ */
 final Class ErrorCode {
+    //参数异常
     const INVALID_PARAMETER = 1001;
     const NEED_PARAMETER = 1002;
-    const METHOD_NOT_FOUND = 1003;
-    const DBO_EXECUTE_FAILED = 2000;
+    //方法异常
+    const METHOD_NOT_FOUND = 1101;
+    //数据库异常
+    const DBO_FAILED = 2000;
+    const DBO_CONFIG_READ_FAILED = 2001;
+    const DBO_CONNECT_FAILED = 2002;//数据库连接失败
+    const DBO_SQL_EXECUTE_FAILED = 2003;//SQL执行异常
     //---mvc
     //controller
     //model
