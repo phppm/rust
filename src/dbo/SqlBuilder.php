@@ -140,6 +140,7 @@ class SqlBuilder {
 
     private function update($data) {
         $this->parseUpdateData($data);
+        $this->parseColumn($data);
         $this->checkRequire($data);
         $this->parseBinds($data);
         $this->parseVars($data);
