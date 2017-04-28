@@ -97,7 +97,7 @@ class WebRequest implements RequestInterface {
      */
     protected function initUriByServerEnv() {
         $uri       = new Uri('');
-        $env_https = $_SERVER['HTTPS']??'';
+        $env_https = $_SERVER['HTTPS']??'off';
         if ($env_https) {
             $uri = $uri->withScheme($env_https == 'on' ? 'https' : 'http');
         }
