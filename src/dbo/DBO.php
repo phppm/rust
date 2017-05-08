@@ -45,7 +45,18 @@ class DBO extends PDO {
      */
     public function execute($sqlMap) {
         if ('w' === $sqlMap['rw']) {
-            $this->_affectedRows = $this->exec($sqlMap['sql']);
+            try{
+                $this->_affectedRows = $this->exec($sqlMap['sql']);
+            } catch (PDOException $e) {
+                $err_info = $this->errorInfo();
+                $msg = array_pop($err_info);
+                $data = [
+                    'driver_code'    => isset($err_info[1]) ? $err_info[1] : null,
+                    'sql'            => $sqlMap,
+                    'sql_state_code' => isset($err_info[0]) ? $err_info[0] : null,
+                ];
+                throw new SQLExecuteException($msg, $data);
+            }
             if ('insert' === $sqlMap['sql_type']) {
                 $this->_lastInsertId = $this->lastInsertId();
             }
