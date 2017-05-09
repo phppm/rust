@@ -1,5 +1,7 @@
 <?php
+
 namespace rust\web;
+
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -41,29 +43,29 @@ class WebRequest implements RequestInterface {
      */
     public function initRequestByServerEnv() {
         //init request time
-        $this->requestTime   = $_SERVER['REQUEST_TIME']??NULL;
-        $this->requestTimeMS = $_SERVER['REQUEST_TIME_FLOAT']??NULL;
-        $this->requestTimeMS = $this->requestTimeMS ? $this->requestTimeMS * 10000 : NULL;
+        $this->requestTime=$_SERVER['REQUEST_TIME']??null;
+        $this->requestTimeMS=$_SERVER['REQUEST_TIME_FLOAT']??null;
+        $this->requestTimeMS=$this->requestTimeMS ? $this->requestTimeMS * 10000 : null;
         //init ip
-        $this->remoteAddress = $_SERVER['REMOTE_ADDR']??NULL;
+        $this->remoteAddress=$_SERVER['REMOTE_ADDR']??null;
         //----------
-        $protocol = $_SERVER['SERVER_PROTOCOL']??'';
-        $version  = $protocol ? str_replace('HTTP/', '', $protocol) : '1.1';
-        $method   = $_SERVER['REQUEST_METHOD']??'GET';
-        $method   = $method ? $method : 'GET';
-        $uri      = $this->initUriByServerEnv();
+        $protocol=$_SERVER['SERVER_PROTOCOL']??'';
+        $version=$protocol ? str_replace('HTTP/', '', $protocol) : '1.1';
+        $method=$_SERVER['REQUEST_METHOD']??'GET';
+        $method=$method ? $method : 'GET';
+        $uri=$this->initUriByServerEnv();
         //get headers
-        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        $headers=function_exists('getallheaders') ? getallheaders() : [];
         if (!$headers) {
-            $headers = [];
-            foreach ($_SERVER as $name => $value) {
+            $headers=[];
+            foreach ($_SERVER as $name=>$value) {
                 if (substr($name, 0, 5) == 'HTTP_') {
-                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))]=$value;
                 }
             }
         }
         //body
-        $body = new LazyOpenStream('php://input', 'r+');
+        $body=new LazyOpenStream('php://input', 'r+');
         $this->createRequest($method, $uri, $headers, $body, $version);
     }
 
@@ -75,20 +77,20 @@ class WebRequest implements RequestInterface {
      * @param null   $body
      * @param string $version
      */
-    protected function createRequest($method, $uri, array $headers = [], $body = NULL, $version = '1.1') {
+    protected function createRequest($method, $uri, array $headers=[], $body=null, $version='1.1') {
         if (!($uri instanceof UriInterface)) {
-            $uri = new Uri($uri);
+            $uri=new Uri($uri);
         }
-        $this->method = strtoupper($method);
-        $this->uri    = $uri;
+        $this->method=strtoupper($method);
+        $this->uri=$uri;
         $this->setHeaders($headers);
-        $this->protocol = $version;
+        $this->protocol=$version;
         if (!$this->hasHeader('Host')) {
             $this->updateHostFromUri();
         }
         //初始化stream
-        if ($body !== '' && $body !== NULL) {
-            $this->stream = StreamUtil::streamFor($body);
+        if ($body !== '' && $body !== null) {
+            $this->stream=StreamUtil::streamFor($body);
         }
     }
 
@@ -96,36 +98,40 @@ class WebRequest implements RequestInterface {
      * @return Uri
      */
     protected function initUriByServerEnv() {
-        $uri       = new Uri('');
-        $env_https = $_SERVER['HTTPS']??'off';
+        $uri=new Uri('');
+        $env_https=$_SERVER['HTTPS']??'off';
         if ($env_https) {
-            $uri = $uri->withScheme($env_https == 'on' ? 'https' : 'http');
+            $uri=$uri->withScheme($env_https == 'on' ? 'https' : 'http');
         }
-        $env_host = getenv('HTTP_HOST');
-        $env_host = $env_host ? $env_host : getenv('SERVER_NAME');
+        $env_host=getenv('HTTP_HOST');
+        $env_host=$env_host ? $env_host : getenv('SERVER_NAME');
         if ($env_host) {
-            $uri = $uri->withHost($env_host);
+            $uri=$uri->withHost($env_host);
         }
-        $env_port = getenv('SERVER_PORT');
+        $env_port=getenv('SERVER_PORT');
         if ($env_port) {
-            $uri = $uri->withPort($env_port);
+            $uri=$uri->withPort($env_port);
         }
-        $env_uri = getenv('REQUEST_URI');
-        $path    = NULL;
+        $env_uri=getenv('REQUEST_URI');
         if ($env_uri) {
-            $path = current(explode('?', $env_uri));
-            $uri  = $uri->withPath($path);
+            $uri=$uri->withOriginalUri($env_uri);
+        }
+        $pathInfo=getenv('PATH_INFO');
+        $path=$pathInfo ? $pathInfo : $env_uri;
+        if ($path) {
+            $path=current(explode('?', $path));
+            $uri=$uri->withPath($path);
         }
         //TODO:remove默认格式
-        $format = 'json';
-        if ($path && FALSE !== strpos('.', $format)) {
-            $pathInfo = explode('.', $path);
-            $format   = $pathInfo && is_array($pathInfo) ? array_pop($pathInfo) : $format;
+        $format='json';
+        if ($path && false !== strpos('.', $format)) {
+            $pathInfo=explode('.', $path);
+            $format=$pathInfo && is_array($pathInfo) ? array_pop($pathInfo) : $format;
         }
-        $this->format = strtolower($format);
-        $env_query    = getenv('QUERY_STRING');
+        $this->format=strtolower($format);
+        $env_query=getenv('QUERY_STRING');
         if ($env_query) {
-            $uri = $uri->withQuery($env_query);
+            $uri=$uri->withQuery($env_query);
         }
         return $uri;
     }
@@ -140,8 +146,8 @@ class WebRequest implements RequestInterface {
      * @return WebRequest
      */
     public function withCookies(array $cookies) {
-        $new          = clone $this;
-        $new->cookies = $cookies;
+        $new=clone $this;
+        $new->cookies=$cookies;
         return $new;
     }
 
@@ -150,8 +156,8 @@ class WebRequest implements RequestInterface {
     }
 
     public function withFiles($files) {
-        $new        = clone $this;
-        $new->files = $files;
+        $new=clone $this;
+        $new->files=$files;
         return $new;
     }
 
@@ -160,13 +166,13 @@ class WebRequest implements RequestInterface {
     }
 
     public function withParsedBody($data) {
-        $new = clone $this;
+        $new=clone $this;
         if (!$data) {
-            $data        = $new->getBody()->getContents();
-            $jsonDecoder = $data && is_string($data) ? json_decode($data, TRUE) : $data;
-            $data        = $jsonDecoder ? $jsonDecoder : $data;
+            $data=$new->getBody()->getContents();
+            $jsonDecoder=$data && is_string($data) ? json_decode($data, true) : $data;
+            $data=$jsonDecoder ? $jsonDecoder : $data;
         }
-        $new->parsedBody = $data;
+        $new->parsedBody=$data;
         return $new;
     }
 
@@ -175,8 +181,8 @@ class WebRequest implements RequestInterface {
     }
 
     public function withQueryParameters($data) {
-        $new                  = clone $this;
-        $new->queryParameters = $data;
+        $new=clone $this;
+        $new->queryParameters=$data;
         return $new;
     }
 
@@ -190,8 +196,8 @@ class WebRequest implements RequestInterface {
      * @return WebRequest
      */
     public function withMethod($method) {
-        $new         = clone $this;
-        $new->method = strtoupper($method);
+        $new=clone $this;
+        $new->method=strtoupper($method);
         return $new;
     }
 
@@ -200,15 +206,15 @@ class WebRequest implements RequestInterface {
     }
 
     public function getRequestTarget() {
-        if ($this->requestTarget !== NULL) {
+        if ($this->requestTarget !== null) {
             return $this->requestTarget;
         }
-        $target = $this->uri->getPath();
+        $target=$this->uri->getPath();
         if ($target == '') {
-            $target = '/';
+            $target='/';
         }
         if ($this->uri->getQuery() != '') {
-            $target .= '?' . $this->uri->getQuery();
+            $target.='?' . $this->uri->getQuery();
         }
         return $target;
     }
@@ -222,8 +228,8 @@ class WebRequest implements RequestInterface {
         if (preg_match('#\s#', $requestTarget)) {
             throw new InvalidArgumentException('Invalid request target provided; cannot contain whitespace');
         }
-        $new                = clone $this;
-        $new->requestTarget = $requestTarget;
+        $new=clone $this;
+        $new->requestTarget=$requestTarget;
         return $new;
     }
 
@@ -237,12 +243,12 @@ class WebRequest implements RequestInterface {
      *
      * @return $this|WebRequest
      */
-    public function withUri(UriInterface $uri, $preserveHost = FALSE) {
+    public function withUri(UriInterface $uri, $preserveHost=false) {
         if ($uri === $this->uri) {
             return $this;
         }
-        $new      = clone $this;
-        $new->uri = $uri;
+        $new=clone $this;
+        $new->uri=$uri;
         if (!$preserveHost) {
             $new->updateHostFromUri();
         }
@@ -255,7 +261,7 @@ class WebRequest implements RequestInterface {
      * @return null|string
      */
     public function getProxyIpAddress() {
-        static $forwarded = [
+        static $forwarded=[
             'HTTP_CLIENT_IP',
             'HTTP_X_FORWARDED_FOR',
             'HTTP_X_FORWARDED',
@@ -263,17 +269,17 @@ class WebRequest implements RequestInterface {
             'HTTP_FORWARDED_FOR',
             'HTTP_FORWARDED',
         ];
-        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        $flags=FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
         foreach ($forwarded as $key) {
             if (!array_key_exists($key, $_SERVER)) {
                 continue;
             }
             sscanf($_SERVER[$key], '%[^,]', $ip);
-            if (filter_var($ip, FILTER_VALIDATE_IP, $flags) !== FALSE) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, $flags) !== false) {
                 return $ip;
             }
         }
-        return NULL;
+        return null;
     }
 
     /**
@@ -283,9 +289,9 @@ class WebRequest implements RequestInterface {
      * @return null|mixed
      * @throws HttpException
      */
-    public function getParameter($name, $initValue = NULL) {
+    public function getParameter($name, $initValue=null) {
         if (!isset($this->parameters[$name])) {
-            if (NULL !== $initValue) {
+            if (null !== $initValue) {
                 return $initValue;
             }
             throw new HttpException(2001, 'not found parameter "' . $name . '"');
@@ -298,7 +304,7 @@ class WebRequest implements RequestInterface {
     }
 
     public function getFormat() {
-        $format = $this->format ? strtolower($this->format) : NULL;
+        $format=$this->format ? strtolower($this->format) : null;
         return $format;
     }
 
@@ -309,9 +315,9 @@ class WebRequest implements RequestInterface {
      *
      * @return null
      */
-    public function getRequestVersion($key = 'ver') {
-        $version = $this->getParameter($key);
-        $version = $version ? $version : NULL;
+    public function getRequestVersion($key='ver') {
+        $version=$this->getParameter($key);
+        $version=$version ? $version : null;
         return $version;
     }
 
@@ -320,10 +326,10 @@ class WebRequest implements RequestInterface {
      *
      * @return int|string
      */
-    public function getRequestTime($format = NULL) {
-        $result = intval($this->requestTime);
+    public function getRequestTime($format=null) {
+        $result=intval($this->requestTime);
         if (!empty($format)) {
-            $result = date($format, $result);
+            $result=date($format, $result);
         }
         return $result;
     }
@@ -350,7 +356,7 @@ class WebRequest implements RequestInterface {
      * @return bool
      */
     public function isRouted() {
-        return $this->getRouteInfo() ? TRUE : FALSE;
+        return $this->getRouteInfo() ? true : false;
     }
 
     /**
@@ -359,14 +365,14 @@ class WebRequest implements RequestInterface {
      * @return array
      */
     public function normalizeFiles(array $files) {
-        $normalized = [];
-        foreach ($files as $key => $value) {
+        $normalized=[];
+        foreach ($files as $key=>$value) {
             if ($value instanceof UploadedFileInterface) {
-                $normalized[$key] = $value;
+                $normalized[$key]=$value;
             } elseif (is_array($value) && isset($value['tmp_name'])) {
-                $normalized[$key] = $this->createUploadedFileFromSpec($value);
+                $normalized[$key]=$this->createUploadedFileFromSpec($value);
             } elseif (is_array($value)) {
-                $normalized[$key] = $this->normalizeFiles($value);
+                $normalized[$key]=$this->normalizeFiles($value);
                 continue;
             } else {
                 throw new InvalidArgumentException('Invalid value in files specification');
@@ -380,14 +386,14 @@ class WebRequest implements RequestInterface {
      * @param array $parameters
      */
     protected function setParameters(array $parameters) {
-        $this->parameters = $parameters;
+        $this->parameters=$parameters;
     }
 
     /**
      * @param $route_info
      */
     public function setRouteInfo($route_info) {
-        $this->routedInfo = $route_info;
+        $this->routedInfo=$route_info;
     }
 
     /**
@@ -395,17 +401,17 @@ class WebRequest implements RequestInterface {
      *
      * @return array
      */
-    private function normalizeNestedFileSpec(array $files = []) {
-        $normalizedFiles = [];
+    private function normalizeNestedFileSpec(array $files=[]) {
+        $normalizedFiles=[];
         foreach (array_keys($files['tmp_name']) as $key) {
-            $spec                  = [
-                'tmp_name' => $files['tmp_name'][$key],
-                'size'     => $files['size'][$key],
-                'error'    => $files['error'][$key],
-                'name'     => $files['name'][$key],
-                'type'     => $files['type'][$key],
+            $spec=[
+                'tmp_name'=>$files['tmp_name'][$key],
+                'size'    =>$files['size'][$key],
+                'error'   =>$files['error'][$key],
+                'name'    =>$files['name'][$key],
+                'type'    =>$files['type'][$key],
             ];
-            $normalizedFiles[$key] = $this->createUploadedFileFromSpec($spec);
+            $normalizedFiles[$key]=$this->createUploadedFileFromSpec($spec);
         }
         return $normalizedFiles;
     }
@@ -423,21 +429,21 @@ class WebRequest implements RequestInterface {
     }
 
     private function updateHostFromUri() {
-        $host = $this->uri->getHost();
+        $host=$this->uri->getHost();
         if ($host == '') {
             return;
         }
-        if (($port = $this->uri->getPort()) !== NULL) {
-            $host .= ':' . $port;
+        if (($port=$this->uri->getPort()) !== null) {
+            $host.=':' . $port;
         }
         if (isset($this->headerNames['host'])) {
-            $header = $this->headerNames['host'];
+            $header=$this->headerNames['host'];
         } else {
-            $header                    = 'Host';
-            $this->headerNames['host'] = 'Host';
+            $header='Host';
+            $this->headerNames['host']='Host';
         }
         // Ensure Host is the first header.
         // See: http://tools.ietf.org/html/rfc7230#section-5.4
-        $this->headers = [$header => [$host]] + $this->headers;
+        $this->headers=[$header=>[$host]] + $this->headers;
     }
 }

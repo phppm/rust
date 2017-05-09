@@ -37,6 +37,10 @@ class Uri implements UriInterface {
      * @var string Uri main domain.
      */
     private $mainDomain = '';
+    /**
+     * @var string $originalUri origina uri
+     */
+    private $originalUri ='';
 
     /**
      * @param string $uri URI to parse
@@ -267,6 +271,10 @@ class Uri implements UriInterface {
         return self::createUriString($this->scheme, $this->getAuthority(), $this->path);
     }
 
+    public function getOriginalUri(): string {
+        return $this->originalUri;
+    }
+
     /**
      * @param string $scheme
      *
@@ -377,6 +385,17 @@ class Uri implements UriInterface {
         }
         $new = clone $this;
         $new->fragment = $fragment;
+        return $new;
+    }
+
+    /**
+     * @param string $uri
+     *
+     * @return Uri
+     */
+    public function withOriginalUri(string $uri) {
+        $new=clone $this;
+        $new->originalUri=$uri;
         return $new;
     }
 
