@@ -12,44 +12,44 @@ use Psr\Http\Message\UriInterface;
  * @author Matthew Weier O'Phinney
  */
 class Uri implements UriInterface {
-    private static $schemes        = [
-        'http'  => 80,
-        'https' => 443,
+    private static $schemes       =[
+        'http' =>80,
+        'https'=>443,
     ];
-    private static $charUnreserved = 'a-zA-Z0-9_\-\.~';
-    private static $charSubDelims  = '!\$&\'\(\)\*\+,;=';
-    private static $replaceQuery   = ['=' => '%3D', '&' => '%26'];
+    private static $charUnreserved='a-zA-Z0-9_\-\.~';
+    private static $charSubDelims ='!\$&\'\(\)\*\+,;=';
+    private static $replaceQuery  =['='=>'%3D', '&'=>'%26'];
     /** @var string Uri scheme. */
-    private $scheme = '';
+    private $scheme='';
     /** @var string Uri user info. */
-    private $userInfo = '';
+    private $userInfo='';
     /** @var string Uri host. */
-    private $host = '';
+    private $host='';
     /** @var int|null Uri port. */
     private $port;
     /** @var string Uri path. */
-    private $path = '';
+    private $path='';
     /** @var string Uri query string. */
-    private $query = '';
+    private $query='';
     /** @var string Uri fragment. */
-    private $fragment = '';
+    private $fragment='';
     /**
      * @var string Uri main domain.
      */
-    private $mainDomain = '';
+    private $mainDomain='';
     /**
      * @var string $originalUri origina uri
      */
-    private $originalUri ='';
+    private $originalUri='';
 
     /**
      * @param string $uri URI to parse
      */
-    public function __construct($uri = '') {
+    public function __construct($uri='') {
         if (!$uri) {
             return;
         }
-        $parts = parse_url($uri);
+        $parts=parse_url($uri);
         if ($parts === false) {
             throw new \InvalidArgumentException("Unable to parse URI: $uri");
         }
@@ -69,30 +69,30 @@ class Uri implements UriInterface {
      * @link http://tools.ietf.org/html/rfc3986#section-5.2.4
      */
     public static function removeDotSegments($path) {
-        static $noopPaths = ['' => true, '/' => true, '*' => true];
-        static $ignoreSegments = ['.' => true, '..' => true];
+        static $noopPaths=[''=>true, '/'=>true, '*'=>true];
+        static $ignoreSegments=['.'=>true, '..'=>true];
         if (isset($noopPaths[$path])) {
             return $path;
         }
-        $results = [];
-        $segments = explode('/', $path);
+        $results=[];
+        $segments=explode('/', $path);
         foreach ($segments as $segment) {
             if ($segment === '..') {
                 array_pop($results);
             } elseif (!isset($ignoreSegments[$segment])) {
-                $results[] = $segment;
+                $results[]=$segment;
             }
         }
-        $newPath = implode('/', $results);
+        $newPath=implode('/', $results);
         // Add the leading slash if necessary
         if (substr($path, 0, 1) === '/'
             && substr($newPath, 0, 1) !== '/'
         ) {
-            $newPath = '/' . $newPath;
+            $newPath='/' . $newPath;
         }
         // Add the trailing slash if necessary
         if ($newPath !== '/' && isset($ignoreSegments[end($segments)])) {
-            $newPath .= '/';
+            $newPath.='/';
         }
         return $newPath;
     }
@@ -108,7 +108,7 @@ class Uri implements UriInterface {
      */
     public static function resolve(UriInterface $base, $rel) {
         if (!($rel instanceof UriInterface)) {
-            $rel = new self($rel);
+            $rel=new self($rel);
         }
         if ((string)$rel === '') {
             // we can simply return the same base URI instance for this same-document reference
@@ -118,31 +118,31 @@ class Uri implements UriInterface {
             return $rel->withPath(self::removeDotSegments($rel->getPath()));
         }
         if ($rel->getAuthority() != '') {
-            $targetAuthority = $rel->getAuthority();
-            $targetPath = self::removeDotSegments($rel->getPath());
-            $targetQuery = $rel->getQuery();
+            $targetAuthority=$rel->getAuthority();
+            $targetPath=self::removeDotSegments($rel->getPath());
+            $targetQuery=$rel->getQuery();
         } else {
-            $targetAuthority = $base->getAuthority();
+            $targetAuthority=$base->getAuthority();
             if ($rel->getPath() === '') {
-                $targetPath = $base->getPath();
-                $targetQuery = $rel->getQuery() != '' ? $rel->getQuery() : $base->getQuery();
+                $targetPath=$base->getPath();
+                $targetQuery=$rel->getQuery() != '' ? $rel->getQuery() : $base->getQuery();
             } else {
                 if ($rel->getPath()[0] === '/') {
-                    $targetPath = $rel->getPath();
+                    $targetPath=$rel->getPath();
                 } else {
                     if ($targetAuthority != '' && $base->getPath() === '') {
-                        $targetPath = '/' . $rel->getPath();
+                        $targetPath='/' . $rel->getPath();
                     } else {
-                        $lastSlashPos = strrpos($base->getPath(), '/');
+                        $lastSlashPos=strrpos($base->getPath(), '/');
                         if ($lastSlashPos === false) {
-                            $targetPath = $rel->getPath();
+                            $targetPath=$rel->getPath();
                         } else {
-                            $targetPath = substr($base->getPath(), 0, $lastSlashPos + 1) . $rel->getPath();
+                            $targetPath=substr($base->getPath(), 0, $lastSlashPos + 1) . $rel->getPath();
                         }
                     }
                 }
-                $targetPath = self::removeDotSegments($targetPath);
-                $targetQuery = $rel->getQuery();
+                $targetPath=self::removeDotSegments($targetPath);
+                $targetQuery=$rel->getQuery();
             }
         }
         return new self(self::createUriString($base->getScheme(), $targetAuthority, $targetPath, $targetQuery, $rel->getFragment()));
@@ -160,12 +160,12 @@ class Uri implements UriInterface {
      * @return UriInterface
      */
     public static function withoutQueryValue(UriInterface $uri, $key) {
-        $current = $uri->getQuery();
+        $current=$uri->getQuery();
         if ($current == '') {
             return $uri;
         }
-        $decodedKey = rawurldecode($key);
-        $result = array_filter(explode('&', $current), function($part) use ($decodedKey) {
+        $decodedKey=rawurldecode($key);
+        $result=array_filter(explode('&', $current), function($part) use ($decodedKey) {
             return rawurldecode(explode('=', $part)[0]) !== $decodedKey;
         });
         return $uri->withQuery(implode('&', $result));
@@ -187,23 +187,23 @@ class Uri implements UriInterface {
      * @return UriInterface
      */
     public static function withQueryValue(UriInterface $uri, $key, $value) {
-        $current = $uri->getQuery();
+        $current=$uri->getQuery();
         if ($current == '') {
-            $result = [];
+            $result=[];
         } else {
-            $decodedKey = rawurldecode($key);
-            $result = array_filter(explode('&', $current), function($part) use ($decodedKey) {
+            $decodedKey=rawurldecode($key);
+            $result=array_filter(explode('&', $current), function($part) use ($decodedKey) {
                 return rawurldecode(explode('=', $part)[0]) !== $decodedKey;
             });
         }
         // Query string separators ("=", "&") within the key or value need to be encoded
         // (while preventing double-encoding) before setting the query string. All other
         // chars that need percent-encoding will be encoded by withQuery().
-        $key = strtr($key, self::$replaceQuery);
+        $key=strtr($key, self::$replaceQuery);
         if ($value !== null) {
-            $result[] = $key . '=' . strtr($value, self::$replaceQuery);
+            $result[]=$key . '=' . strtr($value, self::$replaceQuery);
         } else {
-            $result[] = $key;
+            $result[]=$key;
         }
         return $uri->withQuery(implode('&', $result));
     }
@@ -216,7 +216,7 @@ class Uri implements UriInterface {
      * @return self
      */
     public static function fromParts(array $parts) {
-        $uri = new self();
+        $uri=new self();
         $uri->applyParts($parts);
         return $uri;
     }
@@ -229,12 +229,12 @@ class Uri implements UriInterface {
         if ($this->host == '') {
             return '';
         }
-        $authority = $this->host;
+        $authority=$this->host;
         if ($this->userInfo != '') {
-            $authority = $this->userInfo . '@' . $authority;
+            $authority=$this->userInfo . '@' . $authority;
         }
         if ($this->port !== null) {
-            $authority .= ':' . $this->port;
+            $authority.=':' . $this->port;
         }
         return $authority;
     }
@@ -281,13 +281,13 @@ class Uri implements UriInterface {
      * @return $this|Uri
      */
     public function withScheme($scheme) {
-        $scheme = $this->filterScheme($scheme);
+        $scheme=$this->filterScheme($scheme);
         if ($this->scheme === $scheme) {
             return $this;
         }
-        $new = clone $this;
-        $new->scheme = $scheme;
-        $new->port = $new->filterPort($new->port);
+        $new=clone $this;
+        $new->scheme=$scheme;
+        $new->port=$new->filterPort($new->port);
         return $new;
     }
 
@@ -297,16 +297,16 @@ class Uri implements UriInterface {
      *
      * @return Uri
      */
-    public function withUserInfo($user, $password = null) {
-        $info = $user;
+    public function withUserInfo($user, $password=null) {
+        $info=$user;
         if ($password != '') {
-            $info .= ':' . $password;
+            $info.=':' . $password;
         }
         if ($this->userInfo === $info) {
             return $this;
         }
-        $new = clone $this;
-        $new->userInfo = $info;
+        $new=clone $this;
+        $new->userInfo=$info;
         return $new;
     }
 
@@ -316,15 +316,16 @@ class Uri implements UriInterface {
      * @return $this|Uri
      */
     public function withHost($host) {
-        $host = $this->filterHost($host);
+        $host=$this->filterHost($host);
         if ($this->host === $host) {
             return $this;
         }
-        $hostInfo = explode('.', $host);
-        $mainDomain = is_array($hostInfo) && count($hostInfo) > 1 ? implode('.', array_slice($hostInfo, -2)) : '';
-        $new = clone $this;
-        $new->host = $host;
-        $new->mainDomain = $mainDomain;
+        $hostInfo=explode('.', $host);
+        $mainDomain=is_array($hostInfo)
+        && count($hostInfo) > 1 ? implode('.', array_slice($hostInfo, -2)) : '';
+        $new=clone $this;
+        $new->host=$host;
+        $new->mainDomain=$mainDomain;
         return $new;
     }
 
@@ -334,12 +335,12 @@ class Uri implements UriInterface {
      * @return Uri
      */
     public function withPort($port) {
-        $port = $this->filterPort($port);
+        $port=$this->filterPort($port);
         if ($this->port === $port) {
             return $this;
         }
-        $new = clone $this;
-        $new->port = $port;
+        $new=clone $this;
+        $new->port=$port;
         return $new;
     }
 
@@ -349,12 +350,12 @@ class Uri implements UriInterface {
      * @return $this|Uri
      */
     public function withPath($path) {
-        $path = $this->filterPath($path);
+        $path=$this->filterPath($path);
         if ($this->path === $path) {
             return $this;
         }
-        $new = clone $this;
-        $new->path = $path;
+        $new=clone $this;
+        $new->path=$path;
         return $new;
     }
 
@@ -364,12 +365,12 @@ class Uri implements UriInterface {
      * @return Uri
      */
     public function withQuery($query) {
-        $query = $this->filterQueryAndFragment($query);
+        $query=$this->filterQueryAndFragment($query);
         if ($this->query === $query) {
             return $this;
         }
-        $new = clone $this;
-        $new->query = $query;
+        $new=clone $this;
+        $new->query=$query;
         return $new;
     }
 
@@ -379,12 +380,12 @@ class Uri implements UriInterface {
      * @return Uri
      */
     public function withFragment($fragment) {
-        $fragment = $this->filterQueryAndFragment($fragment);
+        $fragment=$this->filterQueryAndFragment($fragment);
         if ($this->fragment === $fragment) {
             return $this;
         }
-        $new = clone $this;
-        $new->fragment = $fragment;
+        $new=clone $this;
+        $new->fragment=$fragment;
         return $new;
     }
 
@@ -405,15 +406,15 @@ class Uri implements UriInterface {
      * @param array $parts Array of parse_url parts to apply.
      */
     private function applyParts(array $parts) {
-        $this->scheme = isset($parts['scheme']) ? $this->filterScheme($parts['scheme']) : '';
-        $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
-        $this->host = isset($parts['host']) ? $this->filterHost($parts['host']) : '';
-        $this->port = isset($parts['port']) ? $this->filterPort($parts['port']) : null;
-        $this->path = isset($parts['path']) ? $this->filterPath($parts['path']) : '';
-        $this->query = isset($parts['query']) ? $this->filterQueryAndFragment($parts['query']) : '';
-        $this->fragment = isset($parts['fragment']) ? $this->filterQueryAndFragment($parts['fragment']) : '';
+        $this->scheme=isset($parts['scheme']) ? $this->filterScheme($parts['scheme']) : '';
+        $this->userInfo=isset($parts['user']) ? $parts['user'] : '';
+        $this->host=isset($parts['host']) ? $this->filterHost($parts['host']) : '';
+        $this->port=isset($parts['port']) ? $this->filterPort($parts['port']) : null;
+        $this->path=isset($parts['path']) ? $this->filterPath($parts['path']) : '';
+        $this->query=isset($parts['query']) ? $this->filterQueryAndFragment($parts['query']) : '';
+        $this->fragment=isset($parts['fragment']) ? $this->filterQueryAndFragment($parts['fragment']) : '';
         if (isset($parts['pass'])) {
-            $this->userInfo .= ':' . $parts['pass'];
+            $this->userInfo.=':' . $parts['pass'];
         }
     }
 
@@ -429,33 +430,33 @@ class Uri implements UriInterface {
      * @return string
      */
     private static function createUriString($scheme, $authority, $path, $query='', $fragment='') {
-        $uri = '';
+        $uri='';
         if ($scheme != '') {
-            $uri .= $scheme . ':';
+            $uri.=$scheme . ':';
         }
         if ($authority != '') {
-            $uri .= '//' . $authority;
+            $uri.='//' . $authority;
         }
         if ($path != '') {
             if ($path[0] !== '/') {
                 if ($authority != '') {
                     // If the path is rootless and an authority is present, the path MUST be prefixed by "/"
-                    $path = '/' . $path;
+                    $path='/' . $path;
                 }
             } elseif (isset($path[1]) && $path[1] === '/') {
                 if ($authority == '') {
                     // If the path is starting with more than one "/" and no authority is present, the
                     // starting slashes MUST be reduced to one.
-                    $path = '/' . ltrim($path, '/');
+                    $path='/' . ltrim($path, '/');
                 }
             }
-            $uri .= $path;
+            $uri.=$path;
         }
         if ($query != '') {
-            $uri .= '?' . $query;
+            $uri.='?' . $query;
         }
         if ($fragment != '') {
-            $uri .= '#' . $fragment;
+            $uri.='#' . $fragment;
         }
         return $uri;
     }
@@ -497,6 +498,8 @@ class Uri implements UriInterface {
         if (!is_string($host)) {
             throw new \InvalidArgumentException('Host must be a string');
         }
+        $hostInfo=explode(':', $host);
+        $host=isset($hostInfo[0]) ? $hostInfo[0] : $hostInfo;
         return strtolower($host);
     }
 
@@ -511,7 +514,7 @@ class Uri implements UriInterface {
         if ($port === null) {
             return null;
         }
-        $port = (int)$port;
+        $port=(int)$port;
         if (1 > $port || 0xffff < $port) {
             throw new \InvalidArgumentException(sprintf('Invalid port: %d. Must be between 1 and 65535', $port));
         }
@@ -531,7 +534,8 @@ class Uri implements UriInterface {
         if (!is_string($path)) {
             throw new \InvalidArgumentException('Path must be a string');
         }
-        return preg_replace_callback('/(?:[^' . self::$charUnreserved . self::$charSubDelims . '%:@\/]++|%(?![A-Fa-f0-9]{2}))/', [$this, 'rawUrlEncodeMatchZero'], $path);
+        return preg_replace_callback('/(?:[^' . self::$charUnreserved . self::$charSubDelims
+            . '%:@\/]++|%(?![A-Fa-f0-9]{2}))/', [$this, 'rawUrlEncodeMatchZero'], $path);
     }
 
     /**
@@ -547,7 +551,8 @@ class Uri implements UriInterface {
         if (!is_string($str)) {
             throw new \InvalidArgumentException('Query and fragment must be a string');
         }
-        return preg_replace_callback('/(?:[^' . self::$charUnreserved . self::$charSubDelims . '%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/', [$this, 'rawUrlEncodeMatchZero'], $str);
+        return preg_replace_callback('/(?:[^' . self::$charUnreserved . self::$charSubDelims
+            . '%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/', [$this, 'rawUrlEncodeMatchZero'], $str);
     }
 
     /**
@@ -556,7 +561,7 @@ class Uri implements UriInterface {
      * @return string
      */
     public function rawUrlEncodeMatchZero(array $match) {
-        $str = isset($match[0]) ? $match[0] : '';
+        $str=isset($match[0]) ? $match[0] : '';
         return rawurlencode($str);
     }
 }
