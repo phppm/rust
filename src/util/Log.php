@@ -108,7 +108,11 @@ final class Log {
         $paras=array_merge(['save_mode'=>1], $paras);
         $save_mode=$paras['save_mode'];
         if ($save_mode === 1) {
-            $instance->writeToFile($type, $msg, $context);
+            try {
+                $instance->writeToFile($type, $msg, $context);
+            } catch (Exception $e) {
+                //TODO:写入失败
+            }
         }
         //TODO:使用seaslog
         //TODO:push to tcp or udp server
