@@ -281,7 +281,7 @@ class SqlBuilder {
             }
             list($column, $value) = $row;
             $clause = ' ' . $this->formatColumn($column);
-            $clause .= FALSE === $expr ? " = '" . $value . "'" : " = " . $expr . " ";
+            $clause .= FALSE === $expr ? " = '" . $value . "'" : vsprintf("%s=%s%s%s",$row);
             $clauses[] = $clause;
         }
         $replace = implode(',', $clauses);
