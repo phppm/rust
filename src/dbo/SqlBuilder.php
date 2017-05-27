@@ -280,9 +280,7 @@ class SqlBuilder {
                 $expr = $row[2];
             }
             list($column, $value) = $row;
-            $clause = ' ' . $this->formatColumn($column);
-            $clause .= FALSE === $expr ? " = '" . $value . "'" : vsprintf("%s=%s%s%s",$row);
-            $clauses[] = $clause;
+            $clauses[] = FALSE === $expr ? sprintf("%s='%s'",$this->formatColumn($column),$value) : vsprintf("%s=%s%s%s",$row);
         }
         $replace = implode(',', $clauses);
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', $replace);
