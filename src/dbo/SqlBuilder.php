@@ -275,12 +275,13 @@ class SqlBuilder {
         }
         $clauses = [];
         foreach ($update as $row) {
-            $expr = FALSE;
+            $row[0]=$this->formatColumn($row[0]);
+            $str="%s='%s'";
             if (isset($row[2]) && '' != $row[2]) {
-                $expr = $row[2];
+                $str="%s=%s%s%s";
+                array_unshift($row, $row[0]);
             }
-            list($column, $value) = $row;
-            $clauses[] = FALSE === $expr ? sprintf("%s='%s'",$this->formatColumn($column),$value) : vsprintf("%s=%s%s%s",$row);
+            $clauses[]=vsprintf($str, $row);
         }
         $replace = implode(',', $clauses);
         $this->sqlMap['sql'] = $this->replaceSqlLabel($this->sqlMap['sql'], 'data', $replace);
