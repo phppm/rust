@@ -22,7 +22,7 @@
       "rust\\": "src/"
     },
     "classmap": [
-      "util/Result.php"
+      "src/util/Result.php"
     ]
   }
 }
