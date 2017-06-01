@@ -20,6 +20,9 @@
   "autoload": {
     "psr-4": {
       "rust\\": "src/"
-    }
+    },
+    "classmap": [
+      "util/Result.php"
+    ]
   }
 }
