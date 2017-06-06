@@ -1,8 +1,10 @@
 <?php
 namespace rust\exception\handler;
+
 use InvalidArgumentException;
 use rust\exception\ErrorException;
 use rust\exception\Inspector;
+use rust\exception\RustException;
 use rust\util\Config;
 use rust\util\Result;
 
@@ -14,12 +16,11 @@ use rust\util\Result;
  */
 class Capture {
     //handler
-    const EXCEPTION_HANDLER = 'handleException';
-    const ERROR_HANDLER     = 'handleError';
-    const SHUTDOWN_HANDLER  = 'handleShutdown';
+    const EXCEPTION_HANDLER='handleException';
+    const ERROR_HANDLER='handleError';
+    const SHUTDOWN_HANDLER='handleShutdown';
     protected $is_registered;
     protected $can_throw_exception;
-
     //protected $request;
     /**
      * @var Config
@@ -28,13 +29,13 @@ class Capture {
     /**
      * @var ExceptionHandler[]
      */
-    private $handlerStack = [];
+    private $handlerStack=[];
     /**
      * In certain scenarios, like in shutdown handler, we can not throw exceptions
      *
      * @var bool
      */
-    private $_can_throw_exceptions = TRUE;
+    private $_can_throw_exceptions=true;
 
     /**
      * Pushes a handler to the end of the stack
@@ -47,14 +48,16 @@ class Capture {
      */
     public function pushHandler($handler) {
         if (!$handler instanceof ExceptionHandler) {
-            throw new InvalidArgumentException("Argument to " . __METHOD__ . " must be a callable, or instance of ");
+            throw new InvalidArgumentException("Argument to " . __METHOD__ .
+                " must be a callable, or instance of ");
         }
-        $this->handlerStack[] = $handler;
+        $this->handlerStack[]=$handler;
         return $this;
     }
 
     /**
      * Registers this instance as an error handler.
+     *
      * @return Capture
      */
     public function register() {
@@ -69,12 +72,12 @@ class Capture {
         $uri_config = $app_config->get('uri');
         $this->request = new Request($uri_config);;
         */
-        class_exists('\\Error', FALSE) or class_exists('\\rust\\exception\\Error');
+        class_exists('\\Error', false) or class_exists('\\rust\\exception\\Error');
         class_exists('\\rust\\exception\\ErrorException');
         set_error_handler([$this, self::ERROR_HANDLER]);
         set_exception_handler([$this, self::EXCEPTION_HANDLER]);
         register_shutdown_function([$this, self::SHUTDOWN_HANDLER]);
-        $this->is_registered = TRUE;
+        $this->is_registered=true;
         return $this;
     }
 
@@ -92,16 +95,16 @@ class Capture {
      * @return bool
      * @throws ErrorException
      */
-    public function handleError($level, $message, $file = NULL, $line = NULL) {
+    public function handleError($level, $message, $file=null, $line=null) {
         if ($level & error_reporting()) {
-            $exception = new ErrorException($message, 9999, $level, $file, $line);
-            if ($this->_can_throw_exceptions) {
-                throw $exception;
-            }
+            $exception=new RustException(9999, $message, [$level, $file, $line]);
+            //if ($this->_can_throw_exceptions) {
+            //    throw $exception;
+            //}
             $this->handleException($exception);
-            return TRUE;
+            return true;
         }
-        return FALSE;
+        return false;
     }
 
     /**
@@ -110,21 +113,21 @@ class Capture {
      * @throws \rust\exception\RuntimeException
      */
     public function handleException($exception) {
-        $code = $exception->getCode();
-        $msg  = $exception->getMessage();
+        $code=$exception->getCode();
+        $msg=$exception->getMessage();
         if ($code < 10000 || $code > 60000) {
-            $code = 99999;
+            $code=99999;
         }
-        $result = new Result($code,$msg);
-        $inspector       = $this->getInspector($exception);
-        $handlerResponse = NULL;
+        $result=new Result($code, $msg);
+        $inspector=$this->getInspector($exception);
+        $handlerResponse=null;
         foreach (array_reverse($this->handlerStack) as $handler) {
             if (!$handler instanceof ExceptionHandler) {
                 continue;
             }
             $handler->setInspector($inspector);
             $handler->setException($exception);
-            $handlerResponse = $handler->handle($result);
+            $handlerResponse=$handler->handle($result);
             if (in_array($handlerResponse, [ExceptionHandler::LAST_HANDLER, ExceptionHandler::QUIT])) {
                 break;
             }
@@ -135,8 +138,8 @@ class Capture {
      * @throws ErrorException
      */
     public function handleShutdown() {
-        $this->_can_throw_exceptions = FALSE;
-        $error                       = error_get_last();
+        $this->_can_throw_exceptions=false;
+        $error=error_get_last();
         if ($error && $this->isLevelFatal($error['type'])) {
             $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
         }
@@ -157,12 +160,12 @@ class Capture {
      * @return bool
      */
     protected function isLevelFatal($level) {
-        $errors = E_ERROR;
-        $errors |= E_PARSE;
-        $errors |= E_CORE_ERROR;
-        $errors |= E_CORE_WARNING;
-        $errors |= E_COMPILE_ERROR;
-        $errors |= E_COMPILE_WARNING;
+        $errors=E_ERROR;
+        $errors|=E_PARSE;
+        $errors|=E_CORE_ERROR;
+        $errors|=E_CORE_WARNING;
+        $errors|=E_COMPILE_ERROR;
+        $errors|=E_COMPILE_WARNING;
         return ($level & $errors) > 0;
     }
 }
