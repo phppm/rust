@@ -173,9 +173,10 @@ final class Log {
         $message="{$timestamp} | {$message}" . RUST_END_LINE;
         $result=null;
         try {
-            $result=error_log($message, 3, $logFilePath);
+            //$result=error_log($message, 3, $logFilePath);
+            $result=file_put_contents($logFilePath, $message, FILE_APPEND);
         } catch (Exception $e) {
-            $result=error_log($message);
+            //$result=error_log($message);
         }
         if (!$result) {
             throw new RuntimeException('The file could not be written to. Check that appropriate permissions have been set.');
