@@ -174,7 +174,11 @@ final class Log {
         $result=null;
         try {
             //$result=error_log($message, 3, $logFilePath);
-            $result=file_put_contents($logFilePath, $message, FILE_APPEND);
+            if(function_exists('swoole_async_write')){
+                $result = swoole_async_write($logFilePath, $message);
+            } else{
+                $result=file_put_contents($logFilePath, $message, FILE_APPEND);
+            }
         } catch (Exception $e) {
             //$result=error_log($message);
         }
