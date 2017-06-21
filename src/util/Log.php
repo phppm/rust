@@ -170,14 +170,14 @@ final class Log {
         $micro=sprintf("%06d", ($originalTime - floor($originalTime)) * 1000000);
         $date=new DateTime(date('Y-m-d H:i:s.' . $micro, $originalTime));
         $timestamp=$date->format($this->dateFormat);
-        $message="{$timestamp} | {$message}" . RUST_END_LINE;
+        $message="{$timestamp} | {$message}";
         $result=null;
         try {
             //$result=error_log($message, 3, $logFilePath);
             if(function_exists('swoole_async_write')){
-                $result = swoole_async_write($logFilePath, $message."\t[swoole]");
+                $result = swoole_async_write($logFilePath, $message."\t[swoole]\n");
             } else{
-                $result=file_put_contents($logFilePath, $message, FILE_APPEND);
+                $result=file_put_contents($logFilePath, $message."\n", FILE_APPEND);
             }
         } catch (Exception $e) {
             //$result=error_log($message);
