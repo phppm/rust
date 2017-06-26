@@ -173,7 +173,7 @@ final class Log {
         $result=null;
         try {
             //$result=error_log($message, 3, $logFilePath);
-            $isCLI=preg_match("/cli/i", PHP_CLI) ? true : false;
+            $isCLI=preg_match("/cli/i", PHP_SAPI) ? true : false;
             if (function_exists('swoole_async_write') && $isCLI) {
                 $result=swoole_async_write($logFilePath, $message . "\t[swoole]\n");
             } else {
