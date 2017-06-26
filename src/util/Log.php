@@ -1,5 +1,4 @@
 <?php
-
 namespace rust\util;
 
 use DateTime;
@@ -89,7 +88,7 @@ final class Log {
      */
     public static function getInstance() {
         if (!self::$instance) {
-            self::$instance=new Log();
+            self::$instance=new Log;
         }
         return self::$instance;
     }
@@ -174,10 +173,11 @@ final class Log {
         $result=null;
         try {
             //$result=error_log($message, 3, $logFilePath);
-            if(function_exists('swoole_async_write')){
-                $result = swoole_async_write($logFilePath, $message."\t[swoole]\n");
-            } else{
-                $result=file_put_contents($logFilePath, $message."\n", FILE_APPEND);
+            $isCLI=preg_match("/cli/i", PHP_CLI) ? true : false;
+            if (function_exists('swoole_async_write') && $isCLI) {
+                $result=swoole_async_write($logFilePath, $message . "\t[swoole]\n");
+            } else {
+                $result=file_put_contents($logFilePath, $message . "\n", FILE_APPEND);
             }
         } catch (Exception $e) {
             //$result=error_log($message);
