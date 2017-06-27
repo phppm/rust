@@ -15,6 +15,7 @@
  *    limitations under the License.
  */
 namespace rust\dbo;
+
 use rust\exception\storage\SqlMapCanNotFindException;
 use rust\Rust;
 use rust\util\design\Singleton;
@@ -22,9 +23,13 @@ use rust\util\design\Singleton;
 class SqlMap {
     use Singleton;
 
-    public function getSql($sid, $data = [], $options = []) {
-        $sqlMap = $this->getSqlMapBySid($sid);
-        $sqlMap = $this->builder($sqlMap, $data, $options);
+    public function getSql($sid, $data=[], $options=[]) {
+        $sharding=$data['sharding']??'';
+        if ($sharding) {
+            unset($data['sharding']);
+        }
+        $sqlMap=$this->getSqlMapBySid($sid, $sharding);
+        $sqlMap=$this->builder($sqlMap, $data, $options);
         return $sqlMap;
     }
 
@@ -36,27 +41,28 @@ class SqlMap {
      * @return mixed
      */
     private function builder($sqlMap, $data, $options) {
-        return (new SqlBuilder())->setSqlMap($sqlMap)->builder($data, $options)->getSqlMap();
+        return (new SqlBuilder)->setSqlMap($sqlMap)->builder($data, $options)->getSqlMap();
     }
 
     /**
      * @param string $sid
+     * @param string $sharding
      *
      * @return null
      * @throws SqlMapCanNotFindException
      */
-    private function getSqlMapBySid($sid) {
-        $app_config = Rust::getConfig();
-        $sql_map    = $app_config->get($sid);
+    private function getSqlMapBySid($sid, $sharding='') {
+        $app_config=Rust::getConfig();
+        $sql_map=$app_config->get($sid);
         if (!$sql_map) {
             throw new SqlMapCanNotFindException('no suck sql map');
         }
-        $sidInfo = explode('.', $sid);
-        $key     = array_pop($sidInfo);
-        $sql_map = (new SqlParser())->setSqlMap($sql_map)->parse($key)->getSqlMap();
+        if ($sharding) {
+            $sql_map['sharding']=$sharding;
+        }
+        $sidInfo=explode('.', $sid);
+        $key=array_pop($sidInfo);
+        $sql_map=(new SqlParser)->setSqlMap($sql_map)->parse($key)->getSqlMap();
         return $sql_map;
     }
 }
-
-
-
