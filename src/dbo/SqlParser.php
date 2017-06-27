@@ -102,6 +102,11 @@ class SqlParser {
         return $resultType;
     }
 
+    /**
+     * @param $map
+     *
+     * @throws SqlCanNotFindTableNameException
+     */
     private function parseTable(&$map) {
         //正则匹配数据表名，表名中不能有空格
         $tablePregMap=[
@@ -113,7 +118,7 @@ class SqlParser {
             'CREATE' =>'/(?<=TABLE\s)(?:IF NOT EXISTS\s+)?\S*/i'
         ];
         if (isset($map['table']) && '' !== $map['table']) {
-            return $map;
+            return;
         }
         $sql=$map['sql'];
         $pos=strpos($sql, ' ');
@@ -128,7 +133,7 @@ class SqlParser {
         }
         $tableMatch=$matches[0];
         $tableNames=explode(' ', $tableMatch);
-        $table=sizeof($tableNames) > 0 ? array_pop($tableNames) : $table;
+        $table=sizeof($tableNames) > 0 ? array_pop($tableNames) : $tableMatch;
         //去除`符合和库名
         if (false !== ($pos=strrpos($table, '.'))) {
             $table=substr($table, $pos + 1);
