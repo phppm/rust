@@ -45,7 +45,7 @@ class SqlParser {
             $map['rw'] = 'r';
         }
         $map['sql_type']    = $this->getSqlType($map['sql']);
-        $map['result_type'] = $this->checkResultType($map['sql_type']); //strtolower($expKey[0])
+        $map['result_type'] = $this->checkResultType($map['sqlType']??$map['sql_type']); //strtolower($expKey[0])
         $map['table']       = $this->getTable($map);
         $this->sqlMap = $map;
         return $this;
@@ -56,11 +56,11 @@ class SqlParser {
     }
 
     private function getSqlType($sql) {
-        preg_match('/^\s*(INSERT|SELECT|UPDATE|DELETE)/is', $sql, $match);
+        preg_match('/^\s*((?:INSERT|SELECT|UPDATE|DELETE|CREATE TABLE){1})/is', $sql, $match);
         if (!$match) {
-            throw new SqlTypeException('sql语句类型错误,必须是INSERT|SELECT|UPDATE|DELETE其中之一');
+            throw new SqlTypeException('sql语句类型错误,必须是INSERT|SELECT|UPDATE|DELETE|CREATE TABLE其中之一');
         }
-        return strtolower(trim($match[0]));
+        return strtolower(str_replace(' ','_',trim($match[0])));
     }
 
     /**
@@ -72,6 +72,9 @@ class SqlParser {
         switch ($mapKey) {
         case 'insert' :
             $resultType = ISqlResultType::LAST_INSERT_ID;
+            break;
+        case 'insertNoId' :
+            $resultType = ISqlResultType::AFFECTED_ROWS;
             break;
         case 'update' :
             $resultType = ISqlResultType::UPDATE;
@@ -106,6 +109,7 @@ class SqlParser {
             'DELETE'  => '/(?<=\sFROM\s)\S*/i',
             'UPDATE'  => '/(?<=UPDATE\s)\S*/i',
             'REPLACE' => '/(?<=REPLACE\s)\S*/i',
+            'CREATE TABLE'=>'/(?<=\sIF NOT EXISTS\s)?\S*/i'
         ];
         if (isset($map['table']) && '' !== $map['table']) {
             return $map;
