@@ -161,7 +161,7 @@ class SqlParser {
         $tableShardingMap=[
             'INSERT' =>[
                 'pattern'=>'/\sINTO\s%s/i',
-                'replace'=>' INFO %s'
+                'replace'=>' INTO %s'
             ],
             'SELECT' =>[
                 'pattern'=>'/\sFROM\s%s/i',
