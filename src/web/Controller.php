@@ -189,6 +189,7 @@ abstract class Controller implements IController {
      * 输出json
      *
      * @param $result
+     * @param int $precision
      */
     final public function outputJson($result,$precision=0) {
         header('Content-type: application/json');
