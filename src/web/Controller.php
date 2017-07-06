@@ -194,7 +194,7 @@ abstract class Controller implements IController {
      */
     final public function outputJson($result, int $options=JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK) {
         header('Content-type: application/json');
-        $serializePrecision=ini_get('serialize_precision');
+        $serializePrecision=@ini_get('serialize_precision');
         if (($options & JSON_NUMERIC_CHECK) && $serializePrecision) {
             ini_set('serialize_precision', -1);
         }
