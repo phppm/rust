@@ -192,6 +192,6 @@ abstract class Controller implements IController {
      */
     final public function outputJson($result) {
         header('Content-type: application/json');
-        die(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
+        die(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING));
     }
 }
