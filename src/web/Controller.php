@@ -17,7 +17,7 @@ use rust\interfaces\IController;
  * @package rust\web
  */
 abstract class Controller implements IController {
-    private $_env = [];
+    private $_env=[];
     /**
      * @var View
      */
@@ -48,11 +48,12 @@ abstract class Controller implements IController {
      * @param WebResponse $response
      * @param Config      $config
      */
-    final public function __construct(WebRequest $request = NULL, WebResponse &$response = NULL, Config $config = NULL) {
-        $this->_config = $config;
-        $this->_request = $request;
-        $this->_response = $response;
-        $this->_view = NULL;
+    final public function __construct(WebRequest $request=null, WebResponse &$response=null,
+        Config $config=null) {
+        $this->_config=$config;
+        $this->_request=$request;
+        $this->_response=$response;
+        $this->_view=null;
         //写入公共环境变量
         $this->env('http_request', $request);
     }
@@ -62,9 +63,9 @@ abstract class Controller implements IController {
      * @return bool
      */
     public function init() {
-        $base_uri = $this->_config->get('route.base_uri');
-        $this->_env['base_url'] = $base_uri;
-        return TRUE;
+        $base_uri=$this->_config->get('route.base_uri');
+        $this->_env['base_url']=$base_uri;
+        return true;
     }
 
     /*
@@ -73,23 +74,23 @@ abstract class Controller implements IController {
      * @param null $val
      * @return bool|mixed|null
      */
-    final public function env($key, $val = NULL) {
-        if (NULL !== $val) {
-            $this->_env[$key] = $val;
+    final public function env($key, $val=null) {
+        if (null !== $val) {
+            $this->_env[$key]=$val;
         } elseif (is_array($key)) {
             if (!$key) {
-                return FALSE;
+                return false;
             }
-            foreach ($key as $k => $v) {
-                $this->_env[$k] = $v;
+            foreach ($key as $k=>$v) {
+                $this->_env[$k]=$v;
             }
         } else {
             if (isset($this->_env[$key])) {
                 return $this->_env[$key];
             }
-            return NULL;
+            return null;
         }
-        return TRUE;
+        return true;
     }
 
     /*
@@ -97,9 +98,9 @@ abstract class Controller implements IController {
      * @param $name
      * @param null $value
      */
-    final public function assign($name, $value = NULL) {
+    final public function assign($name, $value=null) {
         if (!$this->_view) {
-            throw new ViewInstanceNotFoundException();
+            throw new ViewInstanceNotFoundException;
         }
         return $this->_view->assign($name, $value);
     }
@@ -118,7 +119,7 @@ abstract class Controller implements IController {
      */
     final public function end() {
         if (!$this->_view) {
-            throw new ViewInstanceNotFoundException();
+            throw new ViewInstanceNotFoundException;
         }
         $this->_view->end();
     }
@@ -130,7 +131,7 @@ abstract class Controller implements IController {
      */
     final public function render($tpl) {
         if (!$this->_view) {
-            throw new ViewInstanceNotFoundException();
+            throw new ViewInstanceNotFoundException;
         }
         //强制将环境变量 作为common数据 赋给模板
         $this->assign('common', $this->_env);
@@ -171,7 +172,7 @@ abstract class Controller implements IController {
      * @param View $view
      */
     final public function setView(View $view) {
-        $this->_view = $view;
+        $this->_view=$view;
     }
 
     /**
@@ -180,22 +181,20 @@ abstract class Controller implements IController {
      * @param string $path   跳转路径
      * @param array  $params 路径参数
      */
-    final public function redirect($path, $params = []) {
-        $url = URL::create($path, $params);
+    final public function redirect($path, $params=[]) {
+        $url=URL::create($path, $params);
         $this->_response->redirect($url);
     }
 
     /**
      * 输出json
      *
-     * @param $result
+     * @param     $result
      * @param int $precision
      */
-    final public function outputJson($result,$precision=0) {
+    final public function outputJson($result, int $precision=-1) {
         header('Content-type: application/json');
-        if($precision){
-            ini_set('precision',$precision);
-        }
+        ini_set('serialize_precision', $precision);
         die(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK));
     }
 }
