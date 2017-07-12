@@ -80,6 +80,7 @@ class SqlParser {
         case 'update' :
             $resultType=ISqlResultType::UPDATE;
             break;
+        case 'truncate':
         case 'delete' :
             $resultType=ISqlResultType::DELETE;
             break;
@@ -116,7 +117,7 @@ class SqlParser {
             'UPDATE' =>'/(?<=UPDATE\s)\S*/i',
             'REPLACE'=>'/(?<=REPLACE\s)\S*/i',
             'CREATE' =>'/(?<=TABLE\s)(?:IF NOT EXISTS\s+)?\S*/i',
-            'TRUNCATE' =>'/(?<=TRUNCATE\s)\S*/i',
+            'TRUNCATE' =>'/^TRUNCATE\s+(\S+)/i',
         ];
         if (isset($map['table']) && '' !== $map['table']) {
             return;
