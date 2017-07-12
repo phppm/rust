@@ -57,9 +57,9 @@ class SqlParser {
     }
 
     private function getSqlType($sql) {
-        preg_match('/^\s*((?:INSERT|SELECT|UPDATE|DELETE|CREATE TABLE){1})/is', $sql, $match);
+        preg_match('/^\s*((?:INSERT|SELECT|UPDATE|DELETE|CREATE TABLE|TRUNCATE){1})/is', $sql, $match);
         if (!$match) {
-            throw new SqlTypeException('sql语句类型错误,必须是INSERT|SELECT|UPDATE|DELETE|CREATE TABLE其中之一');
+            throw new SqlTypeException('sql语句类型错误,必须是INSERT|SELECT|UPDATE|DELETE|CREATE TABLE|TRUNCATE其中之一');
         }
         return strtolower(str_replace(' ', '_', trim($match[0])));
     }
@@ -115,7 +115,8 @@ class SqlParser {
             'DELETE' =>'/(?<=\sFROM\s)\S*/i',
             'UPDATE' =>'/(?<=UPDATE\s)\S*/i',
             'REPLACE'=>'/(?<=REPLACE\s)\S*/i',
-            'CREATE' =>'/(?<=TABLE\s)(?:IF NOT EXISTS\s+)?\S*/i'
+            'CREATE' =>'/(?<=TABLE\s)(?:IF NOT EXISTS\s+)?\S*/i',
+            'TRUNCATE' =>'/(?<=TRUNCATE\s)\S*/i',
         ];
         if (isset($map['table']) && '' !== $map['table']) {
             return;
@@ -142,7 +143,7 @@ class SqlParser {
         if ('' == $table || !strlen($table)) {
             throw new SqlCanNotFindTableNameException('Can\'t get table name');
         }
-        //分表
+        //TODO:remove分表
         if (isset($map['sharding']) && $map['sharding']) {
             $pattern=$this->getTablePattern($type, $tableMatch, str_replace($table, $map['sharding'], $tableMatch));
             $map['sql']=$pattern ? preg_replace($pattern['pattern'], $pattern['replace'], $map['sql']) : $map['sql'];
@@ -182,6 +183,10 @@ class SqlParser {
             'CREATE' =>[
                 'pattern'=>'/TABLE\s%s/i',
                 'replace'=>'TABLE %s'
+            ],
+            'TRUNCATE' =>[
+                'pattern'=>'/TRUNCATE\s%s/i',
+                'replace'=>'TRUNCATE %s'
             ]
         ];
         $shardingMap=$tableShardingMap[$type]??[];

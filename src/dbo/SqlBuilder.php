@@ -242,12 +242,7 @@ class SqlBuilder {
         }
         $clauses = [];
         foreach ($update as $row) {
-            $expr = FALSE;
-            if (isset($row[2]) && '' != $row[2]) {
-                $expr = $row[2];
-            }
             list($column, $value) = $row;
-            //            $columns = $this->formatColumn($column);
             $clause = ' ' . $column . '=VALUES(' . $column . ')';
             $clauses[] = $clause;
         }
