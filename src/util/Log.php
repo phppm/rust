@@ -39,14 +39,8 @@ final class Log {
      * @var array 日志等级
      */
     private $levels=[
-        self::EMERGENCY=>'emergency',
-        self::ALERT    =>'alert',
-        self::CRITICAL =>'critical',
-        self::ERROR    =>'error',
-        self::SQL      =>'sql',
-        self::WARNING  =>'warning',
-        self::NOTICE   =>'notice',
-        self::INFO     =>'info',
+        self::EMERGENCY=>'emergency', self::ALERT=>'alert', self::CRITICAL=>'critical', self::ERROR=>'error',
+        self::SQL      =>'sql', self::WARNING=>'warning', self::NOTICE=>'notice', self::INFO=>'info',
         self::DEBUG    =>'debug',
     ];
     /**
@@ -109,7 +103,7 @@ final class Log {
         if ($save_mode === 1) {
             try {
                 $instance->writeToFile($type, $msg, $context);
-            } catch (Exception $e) {
+            } catch(Exception $e) {
                 //TODO:写入失败
             }
         }
@@ -129,13 +123,9 @@ final class Log {
         foreach ($context as $key=>$value) {
             $export.="{$key}: ";
             $export.=preg_replace([
-                '/=>\s+([a-zA-Z])/im',
-                '/array\(\s+\)/im',
-                '/^  |\G  /m',
+                '/=>\s+([a-zA-Z])/im', '/array\(\s+\)/im', '/^  |\G  /m',
             ], [
-                '=> $1',
-                'array()',
-                '    ',
+                '=> $1', 'array()', '    ',
             ], str_replace('array (', 'array(', var_export($value, true)));
             $export.=RUST_END_LINE;
         }
@@ -148,11 +138,12 @@ final class Log {
      * @param int|string $level
      * @param string     $message
      * @param array      $context
+     * @param bool       $isAsync
      *
      * @return bool|void
      * @throws RuntimeException
      */
-    protected function writeToFile($level, $message, array $context=[]) {
+    protected function writeToFile($level, $message, array $context=[], bool $isAsync=false) {
         $name=$level;
         if (is_int($level)) {
             $name=isset($this->levels[$level]) ? $this->levels[$level] : '';
@@ -174,12 +165,12 @@ final class Log {
         try {
             //$result=error_log($message, 3, $logFilePath);
             $isCLI=preg_match("/cli/i", PHP_SAPI) ? true : false;
-            if (function_exists('swoole_async_write') && $isCLI) {
+            if ($isAsync && function_exists('swoole_async_write') && $isCLI) {
                 $result=swoole_async_write($logFilePath, $message . "\t[swoole]\n");
             } else {
                 $result=file_put_contents($logFilePath, $message . "\n", FILE_APPEND);
             }
-        } catch (Exception $e) {
+        } catch(Exception $e) {
             //$result=error_log($message);
         }
         if (!$result) {
