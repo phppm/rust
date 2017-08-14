@@ -1,5 +1,4 @@
 <?php
-
 namespace rust\dbo;
 
 use PDO;
@@ -12,7 +11,23 @@ use rust\dbo\exception\SQLExecuteException;
 class DBO extends PDO {
     private $_lastInsertId;
     private $_affectedRows;
-    private $_statement = null;
+    private $_statement=null;
+    /**
+     * @var string $dsn
+     */
+    private $dsn;
+    /**
+     * @var string $username
+     */
+    private $username;
+    /**
+     * @var string $password
+     */
+    private $password;
+    /**
+     * @var array $options
+     */
+    private $options;
 
     /**
      * DBO constructor.
@@ -22,17 +37,21 @@ class DBO extends PDO {
      * @param string $password
      * @param array  $options
      */
-    public function __construct($dsn, $username, $password, $options = []) {
-        $options = $options && is_array($options) ? $options : [];
-        $options += [
-            PDO::ATTR_STATEMENT_CLASS    => [
-                '\\rust\\dbo\\Statement',
-                [$this],
-            ],
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+    public function __construct($dsn, $username, $password, $options=[]) {
+        $this->dsn=$dsn;
+        $this->username=$username;
+        $this->password=$password;
+        $options=$options && is_array($options) ? $options : [];
+        $options+=[
+            PDO::ATTR_STATEMENT_CLASS   =>[
+                '\\rust\\dbo\\Statement', [$this],
+            ], PDO::ATTR_ERRMODE        =>PDO::ERRMODE_EXCEPTION,
+            PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
-        parent::__construct($dsn, $username, $password, $options);
+        $this->options=$options;
+        if(!$this->connect()){
+            //TODO:connect failed
+        }
     }
 
     /**
@@ -45,44 +64,54 @@ class DBO extends PDO {
      */
     public function execute($sqlMap) {
         if ('w' === $sqlMap['rw']) {
-            try{
-                $this->_affectedRows = $this->exec($sqlMap['sql']);
-            } catch (PDOException $e) {
-                $err_info = $this->errorInfo();
-                $msg = array_pop($err_info);
-                $data = [
-                    'driver_code'    => isset($err_info[1]) ? $err_info[1] : null,
-                    'sql'            => $sqlMap,
-                    'sql_state_code' => isset($err_info[0]) ? $err_info[0] : null,
-                ];
-                throw new SQLExecuteException($msg, $data);
+            try {
+                $this->_affectedRows=$this->exec($sqlMap['sql']);
+            } catch(PDOException $e) {
+                if($e->getCode() !== 'HY000' || false===strpos($e->getMessage(), 'server has gone away')) {
+                    $err_info=$this->errorInfo();
+                    $msg=array_pop($err_info);
+                    $data=[
+                        'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
+                        'sql'=>$sqlMap,
+                        'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
+                    ];
+                    throw new SQLExecuteException($msg, $data);
+                }
+                if($this->connect()){
+                    $this->execute($sqlMap);
+                }
             }
             if ('insert' === $sqlMap['sql_type']) {
-                $this->_lastInsertId = $this->lastInsertId();
+                $this->_lastInsertId=$this->lastInsertId();
             }
         } else {
-            $exec_result = null;
-            $stmt = null;
+            $exec_result=null;
+            $stmt=null;
             try {
-                $sql = $sqlMap['sql'];
-                $this->_statement = $this->prepare($sql);
-                $exec_result = $this->_statement->execute();
+                $sql=$sqlMap['sql'];
+                $this->_statement=$this->prepare($sql);
+                $exec_result=$this->_statement->execute();
                 if (isset($sqlMap['result_model']) && $sqlMap['result_model']) {
                     $this->_statement->setFetchMode(PDO::FETCH_CLASS, $sqlMap['result_model']);
                 } else {
                     $this->_statement->setFetchMode(PDO::FETCH_CLASS, 'stdClass');
                 }
                 //TODO:写入SQL日志
-            } catch (PDOException $e) {
-                //TODO:写入SQL异常
+            } catch(PDOException $e) {
+                if($e->getCode() !== 'HY000' || false===strpos($e->getMessage(), 'server has gone away')) {
+                    //TODO:写入SQL异常
+                }
+                if($this->connect()){
+                    $this->execute($sqlMap);
+                }
             }
             if (!$exec_result) {
-                $err_info = $this->_statement->errorInfo();
-                $msg = array_pop($err_info);
-                $data = [
-                    'driver_code'    => isset($err_info[1]) ? $err_info[1] : null,
-                    'sql'            => $sqlMap,
-                    'sql_state_code' => isset($err_info[0]) ? $err_info[0] : null,
+                $err_info=$this->_statement->errorInfo();
+                $msg=array_pop($err_info);
+                $data=[
+                    'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
+                    'sql'=>$sqlMap,
+                    'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
                 ];
                 throw new SQLExecuteException($msg, $data);
             }
@@ -90,15 +119,27 @@ class DBO extends PDO {
         return new SQLExecuteResult($this);
     }
 
-    public function getLastInsertId(): int {
+    public function getLastInsertId() : int {
         return $this->_lastInsertId;
     }
 
-    public function getAffectedRows(): int {
+    public function getAffectedRows() : int {
         return $this->_affectedRows;
     }
 
-    public function getStatement(): Statement {
+    public function getStatement() : Statement {
         return $this->_statement;
+    }
+
+    /**
+     * @return bool
+     */
+    private function connect():bool {
+        $dsn=$this->dsn;
+        $username=$this->username;
+        $password=$this->password;
+        $options=$this->options;
+        parent::__construct($dsn, $username, $password, $options);
+        return true;
     }
 }
