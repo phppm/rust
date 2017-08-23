@@ -12,6 +12,7 @@ class DBO extends PDO {
     private $_lastInsertId;
     private $_affectedRows;
     private $_statement=null;
+    private $connected =false;
     /**
      * @var string $dsn
      */
@@ -51,7 +52,7 @@ class DBO extends PDO {
             PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
         $this->options=$options;
-        if (null === $this->_statement) {
+        if (false === $this->connected) {
             $this->connect();
         }
     }
@@ -100,15 +101,13 @@ class DBO extends PDO {
                 } else {
                     $this->_statement->setFetchMode(PDO::FETCH_CLASS, 'stdClass');
                 }
-                //TODO:写入SQL日志
             } catch(PDOException $e) {
-                if ($e->getCode() !== 'HY000' ||
-                    false === strpos($e->getMessage(), 'server has gone away')) {
-                    //TODO:写入SQL异常
-                }
-                $this->close();
-                if ($this->connect()) {
-                    $this->execute($sqlMap);
+                if ($e->getCode() === 'HY000' &&
+                    false !== strpos($e->getMessage(), 'server has gone away')) {
+                    $this->close();
+                    if ($this->connect()) {
+                        $this->execute($sqlMap);
+                    }
                 }
             }
             if (!$exec_result) {
@@ -151,11 +150,8 @@ class DBO extends PDO {
         $username=$this->username;
         $password=$this->password;
         $options=$this->options;
-        try {
-            parent::__construct($dsn, $username, $password, $options);
-        } catch(PDOException $e) {
-            return false;
-        }
+        parent::__construct($dsn, $username, $password, $options);
+        $this->connected=true;
         return true;
     }
 }
