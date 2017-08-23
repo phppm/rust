@@ -44,13 +44,15 @@ class DBO extends PDO {
         $options=$options && is_array($options) ? $options : [];
         $options+=[
             PDO::ATTR_STATEMENT_CLASS   =>[
-                '\\rust\\dbo\\Statement', [$this],
-            ], PDO::ATTR_ERRMODE        =>PDO::ERRMODE_EXCEPTION,
+                '\\rust\\dbo\\Statement',
+                [$this],
+            ],
+            PDO::ATTR_ERRMODE           =>PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
         $this->options=$options;
-        if(!$this->connect()){
-            //TODO:connect failed
+        if (null === $this->_statement) {
+            $this->connect();
         }
     }
 
@@ -67,17 +69,19 @@ class DBO extends PDO {
             try {
                 $this->_affectedRows=$this->exec($sqlMap['sql']);
             } catch(PDOException $e) {
-                if($e->getCode() !== 'HY000' || false===strpos($e->getMessage(), 'server has gone away')) {
+                if ($e->getCode() !== 'HY000' ||
+                    false === strpos($e->getMessage(), 'server has gone away')) {
                     $err_info=$this->errorInfo();
                     $msg=array_pop($err_info);
                     $data=[
                         'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
-                        'sql'=>$sqlMap,
+                        'sql'           =>$sqlMap,
                         'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
                     ];
                     throw new SQLExecuteException($msg, $data);
                 }
-                if($this->connect()){
+                $this->close();
+                if ($this->connect()) {
                     $this->execute($sqlMap);
                 }
             }
@@ -98,10 +102,12 @@ class DBO extends PDO {
                 }
                 //TODO:写入SQL日志
             } catch(PDOException $e) {
-                if($e->getCode() !== 'HY000' || false===strpos($e->getMessage(), 'server has gone away')) {
+                if ($e->getCode() !== 'HY000' ||
+                    false === strpos($e->getMessage(), 'server has gone away')) {
                     //TODO:写入SQL异常
                 }
-                if($this->connect()){
+                $this->close();
+                if ($this->connect()) {
                     $this->execute($sqlMap);
                 }
             }
@@ -110,7 +116,7 @@ class DBO extends PDO {
                 $msg=array_pop($err_info);
                 $data=[
                     'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
-                    'sql'=>$sqlMap,
+                    'sql'           =>$sqlMap,
                     'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
                 ];
                 throw new SQLExecuteException($msg, $data);
@@ -131,15 +137,25 @@ class DBO extends PDO {
         return $this->_statement;
     }
 
+    public function close() : void {
+        if (null !== $this->_statement) {
+            $this->_statement=null;
+        }
+    }
+
     /**
      * @return bool
      */
-    private function connect():bool {
+    private function connect() : bool {
         $dsn=$this->dsn;
         $username=$this->username;
         $password=$this->password;
         $options=$this->options;
-        parent::__construct($dsn, $username, $password, $options);
+        try {
+            parent::__construct($dsn, $username, $password, $options);
+        } catch(PDOException $e) {
+            return false;
+        }
         return true;
     }
 }

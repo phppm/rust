@@ -41,4 +41,8 @@ class SQLExecuteResult {
     public function getStatement(): Statement {
         return $this->dbo->getStatement();
     }
+
+    public function free(){
+        $this->dbo=null;
+    }
 }
