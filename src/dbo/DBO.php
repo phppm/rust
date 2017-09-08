@@ -3,6 +3,7 @@ namespace rust\dbo;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 use rust\dbo\exception\SQLExecuteException;
 
 /**
@@ -11,8 +12,10 @@ use rust\dbo\exception\SQLExecuteException;
 class DBO extends PDO {
     private $_lastInsertId;
     private $_affectedRows;
+    /**
+     * @var Statement $_statement
+     */
     private $_statement=null;
-    private $connected =false;
     /**
      * @var string $dsn
      */
@@ -44,17 +47,12 @@ class DBO extends PDO {
         $this->password=$password;
         $options=$options && is_array($options) ? $options : [];
         $options+=[
-            PDO::ATTR_STATEMENT_CLASS   =>[
-                '\\rust\\dbo\\Statement',
-                [$this],
-            ],
             PDO::ATTR_ERRMODE           =>PDO::ERRMODE_EXCEPTION,
+            //PDO::ATTR_PERSISTENT        =>true,
             PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
         $this->options=$options;
-        if (false === $this->connected) {
-            $this->connect();
-        }
+        parent::__construct($dsn, $username, $password, $options);
     }
 
     /**
@@ -68,7 +66,7 @@ class DBO extends PDO {
     public function execute($sqlMap) {
         if ('w' === $sqlMap['rw']) {
             try {
-                $this->_affectedRows=$this->exec($sqlMap['sql']);
+                $this->_affectedRows=$this->exec($sqlMap['sql'] . ';');
             } catch(PDOException $e) {
                 if ($e->getCode() !== 'HY000' ||
                     false === strpos($e->getMessage(), 'server has gone away')) {
@@ -82,9 +80,6 @@ class DBO extends PDO {
                     throw new SQLExecuteException($msg, $data);
                 }
                 $this->close();
-                if ($this->connect()) {
-                    $this->execute($sqlMap);
-                }
             }
             if ('insert' === $sqlMap['sql_type']) {
                 $this->_lastInsertId=$this->lastInsertId();
@@ -94,20 +89,14 @@ class DBO extends PDO {
             $stmt=null;
             try {
                 $sql=$sqlMap['sql'];
-                $this->_statement=$this->prepare($sql);
+                $this->_statement=$this->prepare($sql . ';');
                 $exec_result=$this->_statement->execute();
-                if (isset($sqlMap['result_model']) && $sqlMap['result_model']) {
-                    $this->_statement->setFetchMode(PDO::FETCH_CLASS, $sqlMap['result_model']);
-                } else {
-                    $this->_statement->setFetchMode(PDO::FETCH_CLASS, 'stdClass');
-                }
+                $className=$sqlMap['result_model']??'stdClass';
+                $this->_statement->setFetchMode(PDO::FETCH_CLASS, $className);
             } catch(PDOException $e) {
                 if ($e->getCode() === 'HY000' &&
                     false !== strpos($e->getMessage(), 'server has gone away')) {
                     $this->close();
-                    if ($this->connect()) {
-                        $this->execute($sqlMap);
-                    }
                 }
             }
             if (!$exec_result) {
@@ -124,6 +113,23 @@ class DBO extends PDO {
         return new SQLExecuteResult($this);
     }
 
+    /**
+     * @return bool
+     */
+    public function ping() : bool {
+        $result=false;
+        try {
+            if (null !== $this->getAttribute(PDO::ATTR_SERVER_INFO)) {
+                $result=true;
+            }
+        } catch(PDOException $e) {
+            if (false === strpos($e->getMessage(), 'server has gone away')) {
+                $result=true;
+            }
+        }
+        return $result;
+    }
+
     public function getLastInsertId() : int {
         return $this->_lastInsertId;
     }
@@ -132,7 +138,7 @@ class DBO extends PDO {
         return $this->_affectedRows;
     }
 
-    public function getStatement() : Statement {
+    public function getStatement() : PDOStatement {
         return $this->_statement;
     }
 
@@ -140,18 +146,5 @@ class DBO extends PDO {
         if (null !== $this->_statement) {
             $this->_statement=null;
         }
-    }
-
-    /**
-     * @return bool
-     */
-    private function connect() : bool {
-        $dsn=$this->dsn;
-        $username=$this->username;
-        $password=$this->password;
-        $options=$this->options;
-        parent::__construct($dsn, $username, $password, $options);
-        $this->connected=true;
-        return true;
     }
 }

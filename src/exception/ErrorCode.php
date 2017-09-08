@@ -17,6 +17,7 @@ final Class ErrorCode {
     const DBO_CONFIG_READ_FAILED = 2001;
     const DBO_CONNECT_FAILED = 2002;//数据库连接失败
     const DBO_SQL_EXECUTE_FAILED = 2003;//SQL执行异常
+    const DBO_SHARDING_RULE_FAILED = 2004;//分库分表规则异常
     //---mvc
     //controller
     //model
