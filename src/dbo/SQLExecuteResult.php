@@ -1,6 +1,8 @@
 <?php
-
 namespace rust\dbo;
+
+use PDOStatement;
+
 /**
  * Class SQLExecuteResult
  *
@@ -18,31 +20,31 @@ class SQLExecuteResult {
      * @param DBO $dbo
      */
     public function __construct(DBO &$dbo) {
-        $this->dbo = $dbo;
+        $this->dbo=$dbo;
     }
 
     /**
      * @return int
      */
-    public function getLastInsertId(): int {
+    public function getLastInsertId() : int {
         return $this->dbo->getLastInsertId();
     }
 
     /**
      * @return int
      */
-    public function getAffectedRows(): int {
+    public function getAffectedRows() : int {
         return $this->dbo->getAffectedRows();
     }
 
     /**
-     * @return Statement
+     * @return PDOStatement
      */
-    public function getStatement(): Statement {
+    public function getStatement() : PDOStatement {
         return $this->dbo->getStatement();
     }
 
-    public function free(){
+    public function free() {
         $this->dbo=null;
     }
 }
