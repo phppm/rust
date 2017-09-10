@@ -6,6 +6,7 @@
  */
 namespace rust\dbo;
 
+use rust\common\Config as AbstractConfig;
 use rust\dbo\exception\DBException;
 use rust\dbo\exception\DBOException;
 use rust\dbo\exception\DBReadConfigException;
@@ -36,28 +37,22 @@ class DB {
      */
     public static function exec($sid, $data, array $options=[]) {
         $sqlMap=null;
+        $errMsg=null;
         try {
             $sqlMap=SqlMap::getInstance()->getSql($sid, $data, $options);
             $conn_key=Table::getInstance()->getDatabase($sqlMap['table']);
-            Log::write($conn_key."\t".$sid, 'connect');
-            //Log::write(print_r(self::getConnection($conn_key), true), 'connect');
-            $conn = self::getConnection($conn_key);
-            $dbo = $conn->getDBO($conn_key,$sid);
-            $dboResult=DB::getConnection($conn_key)->getDBO($conn_key)->execute($sqlMap);
-            Log::write('execute ok' . "\n-----------------------------------------\n", 'conn_debug');
+            $dboResult=self::getConnection($conn_key)->getDBO($conn_key)->execute($sqlMap);
             $formatter=new ResultFormatter($dboResult, $sqlMap['result_type']);
             return $formatter->format();
         } catch(DBOException $e) {
-            $msg=$e->getMessage() or '数据库执行出错了';
-            Log::write(print_r($sqlMap, true) . '[dbo]', 'db_error');
-            //throw new DBException($msg);
+            $errMsg=($e->getMessage() or '数据库执行出错了') . "\t[dbo]";
         } catch(\PDOException $e) {
-            $msg=$e->getMessage() or '数据库执行出错了';
-            Log::write(print_r($sqlMap, true) . '[pdo]', 'db_error');
-            //throw new DBException($msg);
+            $errMsg=($e->getMessage() or '数据库执行出错了') . "\t[pdo]";
         } catch(\Exception $e) {
-            $msg=$e->getMessage() or '数据库执行出错了';
-            Log::write(print_r($sqlMap, true) . '[err]', 'db_error');
+            $errMsg=$e->getMessage() or '数据库执行出错了' . "\t[exn]";
+        }
+        if ($errMsg) {
+            Log::write($sid . "\t" . $errMsg . print_r($sqlMap, true), 'dbo_error');
         }
         return null;
     }
@@ -125,7 +120,7 @@ class DB {
         if (!$connection instanceof Connection) {
             if (!static::$dbConfig) {
                 $app_config=Rust::getConfig();
-                if (!$app_config || !$app_config instanceof Config) {
+                if (!$app_config || !$app_config instanceof AbstractConfig) {
                     throw new DBReadConfigException('app config read failed!' . "\t" . '[db]');
                 }
                 $dbConfig=$app_config->get('db');
