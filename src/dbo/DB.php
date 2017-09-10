@@ -45,11 +45,14 @@ class DB {
             $formatter=new ResultFormatter($dboResult, $sqlMap['result_type']);
             return $formatter->format();
         } catch(DBOException $e) {
-            $errMsg=($e->getMessage() or '数据库执行出错了') . "\t[dbo]";
+            $errMsg=$e->getCode() . "|" . $e->getMessage() . "\t[dbo]";
         } catch(\PDOException $e) {
-            $errMsg=($e->getMessage() or '数据库执行出错了') . "\t[pdo]";
+            $errMsg=$e->getCode() . "|" . ($e->getMessage()) . "\t[pdo]";
+            if ($e->getCode() === 2006) {
+                return self::exec($sid, $data, $options);
+            }
         } catch(\Exception $e) {
-            $errMsg=$e->getMessage() or '数据库执行出错了' . "\t[exn]";
+            $errMsg=$e->getCode() . "|" . $e->getMessage() . "\t[exn]";
         }
         if ($errMsg) {
             Log::write($sid . "\t" . $errMsg . print_r($sqlMap, true), 'dbo_error');

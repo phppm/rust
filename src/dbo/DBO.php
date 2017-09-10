@@ -68,18 +68,9 @@ class DBO extends PDO {
             try {
                 $this->_affectedRows=$this->exec($sqlMap['sql'] . ';');
             } catch(PDOException $e) {
-                if ($e->getCode() !== 'HY000' ||
-                    false === strpos($e->getMessage(), 'server has gone away')) {
-                    $err_info=$this->errorInfo();
-                    $msg=array_pop($err_info);
-                    $data=[
-                        'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
-                        'sql'           =>$sqlMap,
-                        'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
-                    ];
-                    throw new SQLExecuteException($msg, $data);
+                if ($e->getCode() === 2006 || false !== strpos($e->getMessage(), 'server has gone away')) {
+                    $this->close();
                 }
-                $this->close();
             }
             if ('insert' === $sqlMap['sql_type']) {
                 $this->_lastInsertId=$this->lastInsertId();
@@ -91,11 +82,10 @@ class DBO extends PDO {
                 $sql=$sqlMap['sql'];
                 $this->_statement=$this->prepare($sql . ';');
                 $exec_result=$this->_statement->execute();
-                $className=$sqlMap['result_model']??'stdClass';
+                $className=$sqlMap['result_model'] ?? 'stdClass';
                 $this->_statement->setFetchMode(PDO::FETCH_CLASS, $className);
             } catch(PDOException $e) {
-                if ($e->getCode() === 'HY000' &&
-                    false !== strpos($e->getMessage(), 'server has gone away')) {
+                if ($e->getCode() === 2006 && false !== strpos($e->getMessage(), 'server has gone away')) {
                     $this->close();
                 }
             }
