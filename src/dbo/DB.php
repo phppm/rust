@@ -42,6 +42,9 @@ class DB {
             $sqlMap=SqlMap::getInstance()->getSql($sid, $data, $options);
             $conn_key=Table::getInstance()->getDatabase($sqlMap['table']);
             $dboResult=self::getConnection($conn_key)->getDBO($conn_key)->execute($sqlMap);
+            if(!$sqlMap['result_type']){
+                return null;
+            }
             $formatter=new ResultFormatter($dboResult, $sqlMap['result_type']);
             return $formatter->format();
         } catch(DBOException $e) {
