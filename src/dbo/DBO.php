@@ -124,7 +124,7 @@ class DBO extends PDO {
         return $this->_lastInsertId;
     }
 
-    public function getAffectedRows() : int {
+    public function getAffectedRows() : ?int {
         return $this->_affectedRows;
     }
 
