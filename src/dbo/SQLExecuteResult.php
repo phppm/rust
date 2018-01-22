@@ -34,7 +34,8 @@ class SQLExecuteResult {
      * @return int
      */
     public function getAffectedRows() : int {
-        return $this->dbo->getAffectedRows();
+        $rows=$this->dbo->getAffectedRows();
+        return (!$rows ? 0 : $rows);
     }
 
     /**
