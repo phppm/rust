@@ -39,7 +39,7 @@ class DBO extends PDO {
      * @param string $dsn
      * @param string $username
      * @param string $password
-     * @param array  $options
+     * @param array $options
      */
     public function __construct($dsn, $username, $password, $options=[]) {
         $this->dsn=$dsn;
@@ -47,7 +47,7 @@ class DBO extends PDO {
         $this->password=$password;
         $options=$options && is_array($options) ? $options : [];
         $options+=[
-            PDO::ATTR_ERRMODE           =>PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
             //PDO::ATTR_PERSISTENT        =>true,
             PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
@@ -91,10 +91,10 @@ class DBO extends PDO {
             }
             if (!$exec_result) {
                 $err_info=$this->_statement->errorInfo();
-                $msg=array_pop($err_info);
+                $msg=is_array($err_info) ? implode('|', $err_info) : '';
                 $data=[
-                    'driver_code'   =>isset($err_info[1]) ? $err_info[1] : null,
-                    'sql'           =>$sqlMap,
+                    'driver_code'=>isset($err_info[1]) ? $err_info[1] : null,
+                    'sql'=>$sqlMap,
                     'sql_state_code'=>isset($err_info[0]) ? $err_info[0] : null,
                 ];
                 throw new SQLExecuteException($msg, $data);
