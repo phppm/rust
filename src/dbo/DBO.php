@@ -49,6 +49,7 @@ class DBO extends PDO {
         $options+=[
             PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
             //PDO::ATTR_PERSISTENT        =>true,
+            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY=>true,
             PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8',
         ];
         $this->options=$options;
