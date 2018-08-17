@@ -195,7 +195,7 @@ abstract class Controller implements IController {
      */
     final public function outputJson($result,bool $isCrossDomain=false, int $options=JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK) {
         if(true === $isCrossDomain){
-            header("Access-Control-Allow-Origin", "*");
+            header('Access-Control-Allow-Origin:*');
         }
         header('Content-type: application/json');
         $serializePrecision=@ini_get('serialize_precision');
