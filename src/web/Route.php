@@ -37,7 +37,7 @@ class Route implements IRoute {
     public function route(& $request) {
         $result=true;
         $config=$this->config;
-        $isControllerFront=$config->get('controllerFront');
+        $isControllerFront=$config->get('controllerFront') ? true : false;
         $routeInfo=new RouteInfo($config->get('package'), $config->get('module'), $config->get('controller'), $config->get('action'));
         $request_uri=str_replace('\\', '/', $request->getUri()->getPath());
         $url=trim($request_uri, '/');
