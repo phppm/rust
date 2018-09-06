@@ -1,5 +1,4 @@
 <?php
-
 namespace rust\web;
 
 use InvalidArgumentException;
@@ -28,6 +27,9 @@ class WebRequest implements RequestInterface {
     private $requestTime;
     private $requestTimeMS;
     private $remoteAddress;
+    /**
+     * @var null|RouteInfo $routedInfo
+     */
     private $routedInfo;
     private $parameters;
     private $cookies;
@@ -36,6 +38,7 @@ class WebRequest implements RequestInterface {
     private $files;
 
     public function __construct() {
+        $this->routedInfo=null;
     }
 
     /**
@@ -43,15 +46,15 @@ class WebRequest implements RequestInterface {
      */
     public function initRequestByServerEnv() {
         //init request time
-        $this->requestTime=$_SERVER['REQUEST_TIME']??null;
-        $this->requestTimeMS=$_SERVER['REQUEST_TIME_FLOAT']??null;
+        $this->requestTime=$_SERVER['REQUEST_TIME'] ?? null;
+        $this->requestTimeMS=$_SERVER['REQUEST_TIME_FLOAT'] ?? null;
         $this->requestTimeMS=$this->requestTimeMS ? $this->requestTimeMS * 10000 : null;
         //init ip
-        $this->remoteAddress=$_SERVER['REMOTE_ADDR']??null;
+        $this->remoteAddress=$_SERVER['REMOTE_ADDR'] ?? null;
         //----------
-        $protocol=$_SERVER['SERVER_PROTOCOL']??'';
+        $protocol=$_SERVER['SERVER_PROTOCOL'] ?? '';
         $version=$protocol ? str_replace('HTTP/', '', $protocol) : '1.1';
-        $method=$_SERVER['REQUEST_METHOD']??'GET';
+        $method=$_SERVER['REQUEST_METHOD'] ?? 'GET';
         $method=$method ? $method : 'GET';
         $uri=$this->initUriByServerEnv();
         //get headers
@@ -70,11 +73,10 @@ class WebRequest implements RequestInterface {
     }
 
     /**
-     *
      * @param string $method
-     * @param Uri    $uri
-     * @param array  $headers
-     * @param null   $body
+     * @param Uri $uri
+     * @param array $headers
+     * @param null $body
      * @param string $version
      */
     protected function createRequest($method, $uri, array $headers=[], $body=null, $version='1.1') {
@@ -99,7 +101,7 @@ class WebRequest implements RequestInterface {
      */
     protected function initUriByServerEnv() {
         $uri=new Uri('');
-        $env_https=$_SERVER['HTTPS']??'off';
+        $env_https=$_SERVER['HTTPS'] ?? 'off';
         if ($env_https) {
             $uri=$uri->withScheme($env_https == 'on' ? 'https' : 'http');
         }
@@ -239,7 +241,7 @@ class WebRequest implements RequestInterface {
 
     /**
      * @param UriInterface $uri
-     * @param bool         $preserveHost
+     * @param bool $preserveHost
      *
      * @return $this|WebRequest
      */
@@ -284,7 +286,7 @@ class WebRequest implements RequestInterface {
 
     /**
      * @param string $name
-     * @param null   $initValue
+     * @param null $initValue
      *
      * @return null|mixed
      * @throws HttpException
@@ -344,9 +346,9 @@ class WebRequest implements RequestInterface {
     /**
      * 获取路由信息
      *
-     * @return mixed
+     * @return null|RouteInfo
      */
-    public function getRouteInfo() {
+    public function getRouteInfo():?RouteInfo {
         return $this->routedInfo;
     }
 
@@ -356,7 +358,7 @@ class WebRequest implements RequestInterface {
      * @return bool
      */
     public function isRouted() {
-        return $this->getRouteInfo() ? true : false;
+        return null!==$this->getRouteInfo() ? true : false;
     }
 
     /**
@@ -382,7 +384,6 @@ class WebRequest implements RequestInterface {
     }
 
     /**
-     *
      * @param array $parameters
      */
     protected function setParameters(array $parameters) {
@@ -390,10 +391,10 @@ class WebRequest implements RequestInterface {
     }
 
     /**
-     * @param $route_info
+     * @param RouteInfo $routeInfo
      */
-    public function setRouteInfo($route_info) {
-        $this->routedInfo=$route_info;
+    public function setRouteInfo(RouteInfo $routeInfo) {
+        $this->routedInfo=$routeInfo;
     }
 
     /**
@@ -406,10 +407,10 @@ class WebRequest implements RequestInterface {
         foreach (array_keys($files['tmp_name']) as $key) {
             $spec=[
                 'tmp_name'=>$files['tmp_name'][$key],
-                'size'    =>$files['size'][$key],
-                'error'   =>$files['error'][$key],
-                'name'    =>$files['name'][$key],
-                'type'    =>$files['type'][$key],
+                'size'=>$files['size'][$key],
+                'error'=>$files['error'][$key],
+                'name'=>$files['name'][$key],
+                'type'=>$files['type'][$key],
             ];
             $normalizedFiles[$key]=$this->createUploadedFileFromSpec($spec);
         }
