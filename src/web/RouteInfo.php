@@ -1,8 +1,6 @@
 <?php
 namespace rust\web;
 
-use rust\util\Config;
-
 /**
  * Class RouteInfo
  *
@@ -113,5 +111,23 @@ final class RouteInfo {
      */
     public function setControllerClass(string $controllerClass) : void {
         $this->controllerClass=$controllerClass;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function isController(string $name) : bool {
+        return $this->controller === $name ? true : false;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function isAction(string $name) : bool {
+        return $this->action === $name ? true : false;
     }
 }
