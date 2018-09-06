@@ -66,7 +66,7 @@ class Route implements IRoute {
             $version=$request->getRequestVersion();
             $version=$version ? intval($version) : 1;
         }
-        $this->_setController($routeInfo, $isControllerFront, $version);
+        $this->setController($routeInfo, $isControllerFront, $version);
         $request->setRouteInfo($routeInfo);
         return $result;
     }
@@ -76,7 +76,7 @@ class Route implements IRoute {
      * @param bool $isControllerFront
      * @param null|string $version
      */
-    private function _setController(RouteInfo &$routeInfo, bool $isControllerFront=false, ?string $version=null) : void {
+    private function setController(RouteInfo &$routeInfo, bool $isControllerFront=false, ?string $version=null) : void {
         $package=$routeInfo->getPackage();
         $module=$routeInfo->getModule();
         $controller=$package ? '\\' . $package : '';
