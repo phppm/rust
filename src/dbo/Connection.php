@@ -55,6 +55,7 @@ class Connection {
             }
         } catch(\PDOException $e) {
             unset($this->dbo[$hash]);
+            $dbo=null;
         }
         if (!$dbo) {
             $dbo=new DBO($dsn, $user, $pass, $options);
@@ -195,9 +196,9 @@ class Connection {
     /**
      * Set the modes for the connection.
      *
-     * @param DBO         $dbo
+     * @param DBO $dbo
      * @param  null|array $modes
-     * @param bool        $is_strict
+     * @param bool $is_strict
      *
      * @return void
      */
