@@ -14,6 +14,15 @@
       "role": "Creator"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/php-fig/http-message.git"
+    },
+    {
+      "packagist": false
+    }
+  ],
   "require": {
     "php":"~7.1",
     "psr/http-message": "~1.0"
