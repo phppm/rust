@@ -40,6 +40,10 @@ class Route implements IRoute {
         $isControllerFront=$config->get('controllerFront') ? true : false;
         $routeInfo=new RouteInfo($config->get('package'), $config->get('module'), $config->get('controller'), $config->get('action'));
         $request_uri=str_replace('\\', '/', $request->getUri()->getPath());
+        $baseUri = $config->get('base_uri');
+        if($baseUri){
+            $request_uri = ltrim($request_uri,$baseUri);
+        }
         $url=trim($request_uri, '/');
         if (!empty($url)) {//默认路由
             $url_info=explode('/', $url);
